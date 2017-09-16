@@ -33,7 +33,3 @@ func (aws AWS) update() HTTPStatus {
 func (aws AWS) delete() HTTPStatus {
 	return http.StatusOK
 }
-
-func initCloudFS(storage CloudStorage) {
-
-}
