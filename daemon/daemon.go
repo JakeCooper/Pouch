@@ -8,10 +8,6 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-var userHome = ""
-
-var pouchRoot = ""
-
 func tumbleEvents(fs common.CloudStorage, event fsnotify.Event) {
 	switch event.Op {
 	case fsnotify.Create:
@@ -71,4 +67,9 @@ func RunDaemon(config *common.Configuration) {
 		log.Fatal(err)
 	}
 	<-done
+}
+
+func main() {
+	settings := common.LoadSettings()
+	RunDaemon(&settings)
 }
