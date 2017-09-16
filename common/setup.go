@@ -42,16 +42,11 @@ type Configuration struct {
 func LoadSettings() Configuration {
 	configuration := Configuration{}
 	p := path.Join(os.Getenv("HOME"), ".pouch/settings.json")
-	file, err := os.Open(p)
-	checkAndFailure(err)
-	defer file.Close()
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&configuration)
-	if configuration.PouchRoot == "" {
-		// User picks pouchroot
-	}
-	if configuration.S3Root == "" {
+
+	_, err := os.Stat(p)
+	if os.IsNotExist(err) {
 		configuration.S3Root = generateBucketName()
+		configuration.PouchRoot = path.Join(os.Getenv("HOME"), "Pouch")
 		fmt.Printf("+%v", configuration)
 
 		content, err := json.Marshal(configuration)
@@ -63,12 +58,13 @@ func LoadSettings() Configuration {
 			panic(err)
 		}
 	} else {
-		_, err := GetS3Bucket(configuration.S3Root)
-		if err != nil {
-			panic(err)
-		}
-	}
+		file, err := os.Open(p)
+		checkAndFailure(err)
+		defer file.Close()
 
+		decoder := json.NewDecoder(file)
+		err = decoder.Decode(&configuration)
+	}
 	return configuration
 }
 
