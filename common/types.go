@@ -13,3 +13,7 @@ type CloudStorage interface {
 	// List all files on remote fs
 	List() ([]string, error)
 }
+
+type CreateRequest struct {
+	FileName string `json:fileName`
+}

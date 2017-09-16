@@ -3,18 +3,27 @@ package main
 import (
 	"encoding/json"
 
+	"github.com/JakeCooper/Pouch/common"
 	"github.com/apex/go-apex"
+	"github.com/goamz/goamz/s3"
 )
-
-type message struct {
-	Hello string `json:"hello"`
-}
 
 func main() {
 	apex.HandleFunc(func(event json.RawMessage, ctx *apex.Context) (interface{}, error) {
-		var m message
+		var m common.CreateRequest
 
 		if err := json.Unmarshal(event, &m); err != nil {
+			return nil, err
+		}
+
+		bucket, err := common.GetS3Bucket("pouch-db")
+		if err != nil {
+			return nil, err
+		}
+
+		s := "hello !!!!!!1"
+		err = bucket.Put("test", []byte(s), "text", s3.BucketOwnerFull, s3.Options{})
+		if err != nil {
 			return nil, err
 		}
 
