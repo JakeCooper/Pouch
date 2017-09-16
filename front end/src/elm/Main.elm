@@ -10,7 +10,8 @@ import View exposing (view)
 
 initialModel : Model
 initialModel =
-    {}
+    { objects = []
+    }
 
 
 init : ( Model, Cmd Msg )
