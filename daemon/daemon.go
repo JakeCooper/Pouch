@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"os/user"
 
+	"github.com/JakeCooper/Pouch/common"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -12,37 +12,39 @@ var userHome = ""
 
 var pouchRoot = ""
 
-var fileStorage = InitCloudFS(AWS{
-	Creds: config.S3Root,
-})
-
-func tumbleEvents(event fsnotify.Event) {
+func tumbleEvents(fs common.CloudStorage, event fsnotify.Event) {
 	switch event.Op {
 	case fsnotify.Create:
-		fileStorage.Create(event.Name)
+		fs.Create(event.Name)
 		fmt.Println("CREATED")
 	case fsnotify.Chmod:
 		fmt.Println("CHMOD")
 	case fsnotify.Remove:
-		fileStorage.Delete(event.Name)
+		fs.Delete(event.Name)
 		fmt.Println("REMOVED")
 	case fsnotify.Rename:
-		fileStorage.Update(event.Name)
+		fs.Update(event.Name)
 		fmt.Println("RENAME")
 	case fsnotify.Write:
-		fileStorage.Update(event.Name)
+		fs.Update(event.Name)
 		fmt.Println("WRITE")
 	default:
 		fmt.Println("NONACTION DEFAULT")
 	}
 }
 
-func daemon() {
-	usrHome, err := user.Current()
+// RunDaemon is the main function for watching the file system
+func RunDaemon(config *common.Configuration) {
+	// usrHome, err := user.Current()
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// create an instance of a cloud store
+	cloudStore, err := common.InitCloudFS(config)
 	if err != nil {
-		fmt.Println("FUCK")
+		panic(err)
 	}
-	userHome = usrHome.HomeDir
 
 	// Watch for file changes in root file
 	watcher, err := fsnotify.NewWatcher()
@@ -56,7 +58,7 @@ func daemon() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				tumbleEvents(event)
+				tumbleEvents(cloudStore, event)
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}

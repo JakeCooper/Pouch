@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"encoding/json"
@@ -37,9 +37,8 @@ type Configuration struct {
 	PouchRoot string
 }
 
-var config Configuration
-
-func loadSettings() Configuration {
+// LoadSettings returns the Pouch config settings
+func LoadSettings() Configuration {
 	configuration := Configuration{}
 	file, err := os.Open("./.settings.json")
 	checkAndFailure(err)
@@ -56,12 +55,12 @@ func loadSettings() Configuration {
 		checkAndFailure(err)
 
 		err = ioutil.WriteFile("./.settings.json", content, 0644)
-		_, err = createS3Bucket(configuration.S3Root)
+		_, err = CreateS3Bucket(configuration.S3Root)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		_, err := getS3Bucket(configuration.S3Root)
+		_, err := GetS3Bucket(configuration.S3Root)
 		if err != nil {
 			panic(err)
 		}
@@ -70,20 +69,13 @@ func loadSettings() Configuration {
 	return configuration
 }
 
-func pullFromCloud() {
-	argsWithoutProg := os.Args[1:]
-	file := argsWithoutProg[0]
-	fmt.Println(file)
-	// Get that file from the S3 bucket. Location probably dumped into the tombstone so it's ez to read.
-
-}
-
 func generateBucketName() string {
 	return RandStringRunes(16)
 }
 
-func createS3Bucket(bucketName string) (*s3.Bucket, error) {
-	bucket, err := getS3Bucket(bucketName)
+// CreateS3Bucket ..
+func CreateS3Bucket(bucketName string) (*s3.Bucket, error) {
+	bucket, err := GetS3Bucket(bucketName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create bucket")
 	}
@@ -95,10 +87,11 @@ func createS3Bucket(bucketName string) (*s3.Bucket, error) {
 	return bucket, nil
 }
 
-func getS3Bucket(bucketName string) (*s3.Bucket, error) {
+// GetS3Bucket returns a new instance of a connection to an S3 bucket
+func GetS3Bucket(bucketName string) (*s3.Bucket, error) {
 	fmt.Println(bucketName)
 
-	auth, err := getAuth()
+	auth, err := GetAuth()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not connect to bucket")
 	}
@@ -108,7 +101,9 @@ func getS3Bucket(bucketName string) (*s3.Bucket, error) {
 	return bucket, nil
 }
 
-func getAuth() (*aws.Auth, error) {
+// GetAuth returns an AWS authenication instance. Note that most of the time
+// functions expect a struct not a pointer so you'll need to de-reference the pointer
+func GetAuth() (*aws.Auth, error) {
 	if os.Getenv("AWS_ACCESS_KEY_ID") == "" || os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
 		auth, err := aws.SharedAuth()
 		if err != nil {
@@ -128,17 +123,23 @@ func createPouch() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(config.PouchRoot)
+
+	config := &Configuration{}
+
 	config.PouchRoot = strings.Replace(config.PouchRoot, "~", usr.HomeDir, -1) + "/"
 	os.MkdirAll(config.PouchRoot, os.ModePerm)
-	loadPouch()
+	loadPouch(config)
 }
 
-func loadPouch() {
-	myBucket, err := getS3Bucket(config.S3Root)
-	checkAndFailure(err)
+func loadPouch(config *Configuration) error {
+	myBucket, err := GetS3Bucket(config.S3Root)
+	if err != nil {
+		return err
+	}
 	myFiles, err := myBucket.GetBucketContents()
-	checkAndFailure(err)
+	if err != nil {
+		return err
+	}
 	for file := range *myFiles {
 		fmt.Printf("%s\n", config.PouchRoot+file)
 		if string(file[len(file)-1]) == "/" {
@@ -147,20 +148,23 @@ func loadPouch() {
 		} else {
 			// file
 			filePtr, err := os.Create(config.PouchRoot + file + ".pouch")
-			checkAndFailure(err)
+			if err != nil {
+				return err
+			}
 			filePtr.WriteString(config.PouchRoot + file)
 		}
 	}
+	return nil
 }
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-	config = loadSettings()
+	// config := LoadSettings()
 	createPouch()
 }
 
-func main() {
-	// setup()
-	pullFromCloud()
-	daemon()
-}
+// func main() {
+// 	// setup()
+// 	pullFromCloud()
+// 	daemon()
+// }

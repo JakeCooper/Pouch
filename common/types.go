@@ -1,4 +1,4 @@
-package main
+package common
 
 import "net/http"
 import "fmt"

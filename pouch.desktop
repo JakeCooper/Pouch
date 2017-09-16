@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-MimeType=application/pouch
-Name=Pouch
-Exec=/usr/bin/pouch
