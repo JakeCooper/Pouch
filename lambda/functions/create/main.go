@@ -16,12 +16,12 @@ func main() {
 			return nil, err
 		}
 
-		bucket, err := common.GetS3Bucket("pouch-db")
+		s := "fxUCDZihTKtBDbuv"
+		bucket, err := common.GetS3Bucket(s)
 		if err != nil {
 			return nil, err
 		}
 
-		s := "hello !!!!!!1"
 		err = bucket.Put("test", []byte(s), "text", s3.BucketOwnerFull, s3.Options{})
 		if err != nil {
 			return nil, err
