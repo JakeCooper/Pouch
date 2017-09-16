@@ -4,10 +4,10 @@ import "net/http"
 
 // CloudStorage : Interface for CloudStorage
 type CloudStorage interface {
-	create() HTTPStatus
-	read() HTTPStatus
-	update() HTTPStatus
-	delete() HTTPStatus
+	Create() HTTPStatus
+	Read() HTTPStatus
+	Update() HTTPStatus
+	Delete() HTTPStatus
 }
 
 // HTTPStatus : Status for HTTP, just an int
@@ -18,18 +18,18 @@ type AWS struct {
 	Creds string
 }
 
-func (aws AWS) create() HTTPStatus {
+func (aws AWS) Create() HTTPStatus {
 	return http.StatusOK
 }
 
-func (aws AWS) read() HTTPStatus {
+func (aws AWS) Read() HTTPStatus {
 	return http.StatusOK
 }
 
-func (aws AWS) update() HTTPStatus {
+func (aws AWS) Update() HTTPStatus {
 	return http.StatusOK
 }
 
-func (aws AWS) delete() HTTPStatus {
+func (aws AWS) Delete() HTTPStatus {
 	return http.StatusOK
 }

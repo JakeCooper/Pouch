@@ -1,5 +1,5 @@
 package main
 
-func initCloudFS(storage CloudStorage) CloudStorage {
+func InitCloudFS(storage CloudStorage) CloudStorage {
 	return storage
 }
