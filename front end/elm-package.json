@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "A serverless, infinite file storage system.",
-    "repository": "https://github.com/JakeCooper/Pouch.git",
+    "repository": "https://github.com/jakecooper/pouch.git",
     "license": "MIT",
     "source-directories": [
         "src/elm"
