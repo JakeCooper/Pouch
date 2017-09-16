@@ -70,66 +70,35 @@ func pullFromCloud() {
 
 }
 
+func generateBucketName() string {
+	return RandStringRunes(16)
+}
+
+
 func createS3Bucket(bucketName string) *s3.Bucket {
 	fmt.Println(bucketName)
 
 	auth, err := aws.EnvAuth()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(auth)
+	checkAndFailure(err)
 
 	conn := s3.New(auth, aws.USWest2)
 	bucket := conn.Bucket(bucketName)
 
 	// Need a new bucket
 	err = bucket.PutBucket(s3.BucketOwnerFull)
-	if err != nil {
-		panic(err)
-	}
+	checkAndFailure(err)
 
-	resp, err := bucket.List("", "", "", 100)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Success!", resp)
 	return bucket
 }
 
-func generateBucketName() string {
-	return RandStringRunes(16)
-}
-
 func getS3Bucket(bucketName string) *s3.Bucket {
-	// test if setup has completed
-	// if _, err := os.Stat("~/.pouchconfig"); os.IsExist(err) {
-	// 	fmt.Printf("Setup appears to be ready remove pouchconfig to continue")
-	// 	return
-	// }
-
-	// Create a bucket using bound parameters and put something in it.
-	// Make sure to change the bucket name from "myBucket" to something unique.
-
 	fmt.Println(bucketName)
 
 	auth, err := aws.EnvAuth()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(auth)
+	checkAndFailure(err)
 
 	conn := s3.New(auth, aws.USWest2)
 	bucket := conn.Bucket(bucketName)
-
-	// resp, err := bucket.List("", "", "", 100)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	//fmt.Println("Success!", resp)
 	return bucket
 }
 
