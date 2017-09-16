@@ -45,6 +45,7 @@ func LoadSettings() Configuration {
 
 	_, err := os.Stat(p)
 	if os.IsNotExist(err) {
+		os.MkdirAll(p, os.ModePerm)
 		configuration.S3Root = generateBucketName()
 		configuration.PouchRoot = path.Join(os.Getenv("HOME"), "Pouch")
 		fmt.Printf("+%v", configuration)
