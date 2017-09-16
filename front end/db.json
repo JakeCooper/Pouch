@@ -4,19 +4,19 @@
             "name" : "photos",
             "objectType" : "folder",
             "filePath" : "/home/MichaelReiter/depth",
-            "modified" : 1505569501864
+            "modified" : 1505567501864
         },
         {
             "name" : "documents",
             "objectType" : "folder",
             "filePath" : "/home/MichaelReiter/depth",
-            "modified" : 1505569501865
+            "modified" : 1505469501865
         },
         {
             "name" : "foo.c",
             "objectType" : "file",
             "filePath" : "/home/MichaelReiter/depth",
-            "modified" : 1505569501866
+            "modified" : 1505269501866
         }
     ]
 }
