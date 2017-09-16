@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"os"
 	"os/exec"
 	"os/user"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/goamz/goamz/aws"
 	"github.com/goamz/goamz/s3"
@@ -120,7 +118,8 @@ func GetAuth() (*aws.Auth, error) {
 	return &auth, nil
 }
 
-func createPouch(config *Configuration) {
+// CreatePouch : Create Pouch
+func CreatePouch(config *Configuration) {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
@@ -157,15 +156,3 @@ func loadPouch(config *Configuration) error {
 	}
 	return nil
 }
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-	config := LoadSettings()
-	createPouch(&config)
-}
-
-// func main() {
-// 	// setup()
-// 	pullFromCloud()
-// 	daemon()
-// }

@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -25,11 +26,13 @@ type S3CloudStorage struct {
 // path should be relative to POUCHROOT
 func (s *S3CloudStorage) Create(fp string) error {
 	p := path.Join(s.config.PouchRoot, fp)
-
+	fmt.Println(p)
 	stat, err := os.Stat(p)
 	if os.IsNotExist(err) {
+		fmt.Println("WE FAILIN")
 		return err
 	}
+
 	f, err := os.Open(p)
 	if err != nil {
 		return errors.Wrap(err, "could not open file to be uploaded")
