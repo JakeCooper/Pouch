@@ -120,13 +120,11 @@ func GetAuth() (*aws.Auth, error) {
 	return &auth, nil
 }
 
-func createPouch() {
+func createPouch(config *Configuration) {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	config := &Configuration{}
 
 	config.PouchRoot = strings.Replace(config.PouchRoot, "~", usr.HomeDir, -1) + "/"
 	os.MkdirAll(config.PouchRoot, os.ModePerm)
@@ -138,6 +136,7 @@ func loadPouch(config *Configuration) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(myBucket.Name)
 	myFiles, err := myBucket.GetBucketContents()
 	if err != nil {
 		return err
@@ -161,8 +160,8 @@ func loadPouch(config *Configuration) error {
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-	// config := LoadSettings()
-	createPouch()
+	config := LoadSettings()
+	createPouch(&config)
 }
 
 // func main() {
