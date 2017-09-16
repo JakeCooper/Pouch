@@ -3,29 +3,34 @@ package main
 import (
 	"fmt"
 	"log"
+	"os/user"
 
 	"github.com/fsnotify/fsnotify"
 )
 
-var fileStorage = initCloudFS(AWS{
-	Creds: "JakeCooper",
+var userHome = ""
+
+var pouchRoot = ""
+
+var fileStorage = InitCloudFS(AWS{
+	Creds: config.S3Root,
 })
 
 func tumbleEvents(event fsnotify.Event) {
 	switch event.Op {
 	case fsnotify.Create:
-		fileStorage.create()
+		fileStorage.Create()
 		fmt.Println("CREATED")
 	case fsnotify.Chmod:
 		fmt.Println("CHMOD")
 	case fsnotify.Remove:
-		fileStorage.delete()
+		fileStorage.Delete()
 		fmt.Println("REMOVED")
 	case fsnotify.Rename:
-		fileStorage.update()
+		fileStorage.Update()
 		fmt.Println("RENAME")
 	case fsnotify.Write:
-		fileStorage.update()
+		fileStorage.Update()
 		fmt.Println("WRITE")
 	default:
 		fmt.Println("NONACTION DEFAULT")
@@ -33,6 +38,12 @@ func tumbleEvents(event fsnotify.Event) {
 }
 
 func daemon() {
+	usrHome, err := user.Current()
+	if err != nil {
+		fmt.Println("FUCK")
+	}
+	userHome = usrHome.HomeDir
+
 	// Watch for file changes in root file
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -52,7 +63,7 @@ func daemon() {
 		}
 	}()
 
-	err = watcher.Add("/tmp/test")
+	err = watcher.Add(pouchRoot)
 	if err != nil {
 		log.Fatal(err)
 	}
