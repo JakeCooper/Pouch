@@ -1,7 +1,7 @@
 module Components.Header exposing (view)
 
-import Html exposing (Html, div, header, a, img, i)
-import Html.Attributes exposing (class, src, href, attribute)
+import Html exposing (Html, div, header, a, img, i, input)
+import Html.Attributes exposing (class, src, href, attribute, id, type_)
 import Messages exposing (Msg(..))
 
 
@@ -17,10 +17,9 @@ view =
                         ]
                     ]
                 , div [ class "nav-right" ]
-                    [ a [ class "nav-item", href "" ]
-                        [ i [ attribute "aria-hidden" "true", class "fa fa-plus" ]
-                            []
-                        ]
+                    [ a [ class "nav-item", href "#", attribute "onclick" "javascript:document.getElementById('fileUpload').click()" ]
+                        [ i [ class "fa fa-plus", attribute "aria-hidden" "true" ] [] ]
+                    , input [ id "fileUpload", type_ "file" ] []
                     ]
                 ]
             ]
