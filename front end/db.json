@@ -1,0 +1,22 @@
+{
+    "objects": [
+        {
+            "name" : "foo.c",
+            "objectType" : "file",
+            "filePath" : "/home/MichaelReiter/depth",
+            "modified" : 1505569501864
+        },
+        {
+            "name" : "bar.c",
+            "objectType" : "file",
+            "filePath" : "/home/MichaelReiter/depth",
+            "modified" : 1505569501865
+        },
+        {
+            "name" : "baz.c",
+            "objectType" : "file",
+            "filePath" : "/home/MichaelReiter/depth",
+            "modified" : 1505569501866
+        }
+    ]
+}
