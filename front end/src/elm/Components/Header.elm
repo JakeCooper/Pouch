@@ -3,11 +3,10 @@ module Components.Header exposing (view)
 import Html exposing (Html, div, header, a, img, i)
 import Html.Attributes exposing (class, src, href, attribute)
 import Messages exposing (Msg(..))
-import Model exposing (Model)
 
 
-view : Model -> Html Msg
-view model =
+view : Html Msg
+view =
     div [ class "hero-head" ]
         [ header [ class "nav" ]
             [ div [ class "container" ]
