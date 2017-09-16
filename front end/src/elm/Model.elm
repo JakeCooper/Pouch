@@ -1,8 +1,16 @@
-module Model exposing (Model, CloudObject, ObjectType(..))
+module Model exposing (Model, CloudObject, ObjectType(..), initialModel)
+
+import RemoteData exposing (WebData)
+
+
+initialModel : Model
+initialModel =
+    { objects = RemoteData.Loading
+    }
 
 
 type alias Model =
-    { objects : List CloudObject
+    { objects : WebData (List CloudObject)
     }
 
 
@@ -13,7 +21,7 @@ type ObjectType
 
 type alias CloudObject =
     { name : String
-    , objectType : ObjectType
+    , objectType : String
     , filePath : String
     , modified : Int
     }

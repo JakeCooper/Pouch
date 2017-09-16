@@ -3,15 +3,9 @@ module Main exposing (..)
 import Html exposing (Html, program)
 import Subscriptions exposing (subscriptions)
 import Messages exposing (Msg(..))
-import Model exposing (Model)
+import Model exposing (Model, initialModel)
 import Update exposing (update)
 import View exposing (view)
-
-
-initialModel : Model
-initialModel =
-    { objects = []
-    }
 
 
 init : ( Model, Cmd Msg )
