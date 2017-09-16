@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"strings"
 	"time"
 
@@ -40,7 +41,8 @@ type Configuration struct {
 // LoadSettings returns the Pouch config settings
 func LoadSettings() Configuration {
 	configuration := Configuration{}
-	file, err := os.Open("./.settings.json")
+	p := path.Join(os.Getenv("HOME"), ".pouch/settings.json")
+	file, err := os.Open(p)
 	checkAndFailure(err)
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&configuration)
@@ -89,8 +91,6 @@ func CreateS3Bucket(bucketName string) (*s3.Bucket, error) {
 
 // GetS3Bucket returns a new instance of a connection to an S3 bucket
 func GetS3Bucket(bucketName string) (*s3.Bucket, error) {
-	fmt.Println(bucketName)
-
 	auth, err := GetAuth()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not connect to bucket")
