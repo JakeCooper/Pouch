@@ -3,20 +3,23 @@ APP="Pouch"
 EXT="pouch"
 COMMENT="$APP's data file"
 
+
+mkdir -p ~/.local/share/mime/application/
+
 # Create mime xml (this doesnt work)
-#echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-#<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">
-#    <mime-type type=\"application/x-$APP\">
-#        <comment>$COMMENT</comment>
-#        <icon name=\"application-x-$APP\"/>
-#        <glob pattern=\"*.$EXT\"/>
-#    </mime-type>
-#</mime-info>" > /usr/share/mime/application/x-$EXT.xml
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">
+    <mime-type type=\"application/x-$APP\">
+        <comment>$COMMENT</comment>
+        <icon name=\"application-x-$APP\"/>
+        <glob pattern=\"*.$EXT\"/>
+    </mime-type>
+</mime-info>" > ~/.local/share/mime/application/x-$EXT.xml
 
 # Create application desktop
 echo "[Desktop Entry]
 Name=$APP
-Exec=Pouch %U
+Exec=launcher %U
 MimeType=application/x-$APP
 Icon=~/.local/share/icons/hicolor/48x48/apps/$EXT.png
 Terminal=false
