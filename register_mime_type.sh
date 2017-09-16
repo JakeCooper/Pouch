@@ -34,7 +34,9 @@ update-desktop-database ~/.local/share/applications
 update-mime-database    ~/.local/share/mime
 
 # set default application. `mimeopen <filepath>` now opens things properly
+touch test.pouch
 echo "2\nPouch" | mimeopen -d test.pouch
+rm test.pouch
 
 # copy associated icons to pixmaps
 # cp $APP.png                ~/.local/share/pixmaps
