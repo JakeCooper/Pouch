@@ -1,5 +1,8 @@
 module Messages exposing (Msg(..))
 
+import Model exposing (CloudObject)
+import RemoteData exposing (WebData)
+
 
 type Msg
-    = NoOp
+    = OnFetchObjects (WebData (List CloudObject))
