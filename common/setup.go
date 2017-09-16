@@ -44,6 +44,7 @@ func LoadSettings() Configuration {
 	p := path.Join(os.Getenv("HOME"), ".pouch/settings.json")
 	file, err := os.Open(p)
 	checkAndFailure(err)
+	defer file.Close()
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&configuration)
 	if configuration.PouchRoot == "" {
@@ -56,7 +57,7 @@ func LoadSettings() Configuration {
 		content, err := json.Marshal(configuration)
 		checkAndFailure(err)
 
-		err = ioutil.WriteFile("./.settings.json", content, 0644)
+		err = ioutil.WriteFile(p, content, 0644)
 		_, err = CreateS3Bucket(configuration.S3Root)
 		if err != nil {
 			panic(err)
