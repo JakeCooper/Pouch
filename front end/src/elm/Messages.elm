@@ -7,3 +7,4 @@ import RemoteData exposing (WebData)
 type Msg
     = OnFetchObjects (WebData (List CloudObject))
     | OrderObjects Ordering
+    | UpdateQuery String

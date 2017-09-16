@@ -1,8 +1,9 @@
 module Components.Header exposing (view)
 
 import Html exposing (Html, div, header, a, img, i, input)
-import Html.Attributes exposing (class, src, href, attribute, id, type_)
+import Html.Attributes exposing (class, src, href, attribute, id, type_, placeholder)
 import Messages exposing (Msg(..))
+import Html.Events exposing (onInput)
 
 
 view : Html Msg
@@ -13,6 +14,16 @@ view =
                 [ div [ class "nav-left" ]
                     [ a [ class "nav-item", href "/" ]
                         [ img [ src "/static/logo.png" ]
+                            []
+                        ]
+                    ]
+                , div [ class "nav-center" ]
+                    [ div [ class "nav-item" ]
+                        [ input
+                            [ class "input"
+                            , placeholder "Filter"
+                            , onInput UpdateQuery
+                            ]
                             []
                         ]
                     ]

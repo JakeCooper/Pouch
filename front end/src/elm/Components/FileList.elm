@@ -14,7 +14,7 @@ view : Model -> Html Msg
 view model =
     let
         objectsResult =
-            case model.objects of
+            case model.filteredObjects of
                 RemoteData.NotAsked ->
                     text ""
 
@@ -22,12 +22,7 @@ view model =
                     Components.LoadingSpinner.view
 
                 RemoteData.Success objects ->
-                    div [ class "hero-body" ]
-                        [ div [ class "box" ]
-                            [ ul [ class "objects-list" ]
-                                (List.map viewObject objects)
-                            ]
-                        ]
+                    viewFilesBox model objects
 
                 RemoteData.Failure error ->
                     div [ class "notification is-danger" ]
@@ -39,12 +34,24 @@ view model =
             [ div [ class "container" ]
                 [ div [ class "columns" ]
                     [ div [ class "column is-8 is-offset-2" ]
-                        [ sortingOptions model
-                        , objectsResult
-                        ]
+                        [ objectsResult ]
                     ]
                 ]
             ]
+
+
+viewFilesBox : Model -> List CloudObject -> Html Msg
+viewFilesBox model objects =
+    if not (List.isEmpty objects) then
+        div []
+            [ sortingOptions model
+            , div [ class "box" ]
+                [ ul [ class "objects-list" ]
+                    (List.map viewObject objects)
+                ]
+            ]
+    else
+        text "No files found"
 
 
 viewObject : CloudObject -> Html Msg
