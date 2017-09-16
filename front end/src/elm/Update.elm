@@ -30,7 +30,10 @@ update msg model =
                                         { model | ordering = newOrdering, objects = succeed (List.reverse (List.sortBy .name objects)) }
 
                                 Modified ->
-                                    { model | ordering = newOrdering, objects = succeed (List.sortBy .modified objects) }
+                                    if newOrdering.order == Ascending then
+                                        { model | ordering = newOrdering, objects = succeed (List.sortBy .modified objects) }
+                                    else
+                                        { model | ordering = newOrdering, objects = succeed (List.reverse (List.sortBy .modified objects)) }
                     in
                         ( newModel, Cmd.none )
 
