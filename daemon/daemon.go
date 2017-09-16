@@ -11,23 +11,60 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-func tumbleEvents(fs common.CloudStorage, event fsnotify.Event) {
+func logIfErr(err error) {
+	if err != nil {
+		log.Println("[ERROR]", err)
+	}
+}
+
+func tumbleEvents(fs common.CloudStorage, event fsnotify.Event, cfg *common.Configuration) {
 	switch event.Op {
 	case fsnotify.Create:
 		fmt.Println("CREATE")
-		fs.Create(event.Name)
+		handleCreate(event.Name, fs)
 	case fsnotify.Chmod:
 	case fsnotify.Remove:
 		fmt.Println("REMOVE")
-		fs.Delete(event.Name)
+		handleDelete(event.Name, fs, cfg)
 	case fsnotify.Rename:
 		fmt.Println("RENAME")
-		fs.Delete(event.Name)
+		// err := fs.Delete(event.Name)
+		// logIfErr(err)
+		handleDelete(event.Name, fs, cfg)
+
 	case fsnotify.Write:
 		fmt.Println("WRITE")
-		fs.Update(event.Name)
+		handleUpdate(event.Name, fs)
 	default:
 		fmt.Println("NONACTION DEFAULT")
+	}
+}
+
+func handleCreate(relPath string, fs common.CloudStorage) {
+	if !common.IsPouchFile(relPath) {
+		err := fs.Create(relPath)
+		logIfErr(err)
+	}
+}
+
+func handleDelete(fp string, fs common.CloudStorage, cfg *common.Configuration) {
+	fmt.Println(strings.Split(fp, ".pouch"))
+	if !common.IsPouchFile(fp) {
+		// This is a pouchfile
+		fmt.Println("Gonna drop a tombstone")
+		err := common.DropTombstone(fp, cfg)
+		logIfErr(err)
+	} else {
+		err := fs.Delete(fp)
+		logIfErr(err)
+
+	}
+}
+
+func handleUpdate(relPath string, fs common.CloudStorage) {
+	if !common.IsPouchFile(relPath) {
+		err := fs.Update(relPath)
+		logIfErr(err)
 	}
 }
 
@@ -57,9 +94,8 @@ func RunDaemon(config *common.Configuration) {
 		for {
 			select {
 			case event := <-watcher.Events:
-				event.Name = strings.TrimLeft(event.Name, config.PouchRoot)
-				event.Name = strings.TrimRight(event.Name, ".pouch")
-				tumbleEvents(cloudStore, event)
+				event.Name = common.RelativePath(event.Name, config.PouchRoot)
+				tumbleEvents(cloudStore, event, config)
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}

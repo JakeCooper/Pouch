@@ -82,7 +82,7 @@ func CreateS3Bucket(bucketName string) (*s3.Bucket, error) {
 		return nil, errors.Wrap(err, "failed to create bucket")
 	}
 	// Need a new bucket
-	err = bucket.PutBucket(s3.BucketOwnerFull)
+	err = bucket.PutBucket(s3.AuthenticatedRead)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create bucket")
 	}
