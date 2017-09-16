@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
+	"os/user"
+	"strings"
 	"time"
 
 	"github.com/goamz/goamz/aws"
@@ -74,7 +77,6 @@ func generateBucketName() string {
 	return RandStringRunes(16)
 }
 
-
 func createS3Bucket(bucketName string) *s3.Bucket {
 	fmt.Println(bucketName)
 
@@ -102,9 +104,38 @@ func getS3Bucket(bucketName string) *s3.Bucket {
 	return bucket
 }
 
+func createPouch() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(config.PouchRoot)
+	config.PouchRoot = strings.Replace(config.PouchRoot, "~", usr.HomeDir, -1) + "/"
+	os.MkdirAll(config.PouchRoot, os.ModePerm)
+	loadPouch()
+}
+
+func loadPouch() {
+	myFiles, err := s3Bucket.GetBucketContents()
+	checkAndFailure(err)
+	for file := range *myFiles {
+		fmt.Printf("%s\n", config.PouchRoot+file)
+		if string(file[len(file)-1]) == "/" {
+			// directory
+			os.MkdirAll(config.PouchRoot+file, os.ModePerm)
+		} else {
+			// file
+			filePtr, err := os.Create(config.PouchRoot + file + ".pouch")
+			checkAndFailure(err)
+			filePtr.WriteString(config.PouchRoot + file)
+		}
+	}
+}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	config = loadSettings()
+	createPouch()
 }
 
 func main() {
