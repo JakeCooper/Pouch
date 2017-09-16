@@ -1,9 +1,10 @@
 module Components.FileList exposing (view)
 
-import Html exposing (Html, div, ul, li, i, text, button, a, span)
+import Html exposing (Html, div, ul, li, i, text, button, a, span, p, br)
 import Html.Attributes exposing (class, src, attribute, href)
+import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Model exposing (Model, CloudObject, ObjectType(..))
+import Model exposing (Model, CloudObject, ObjectType(..), Order(..), Ordering, Field(..))
 import RemoteData exposing (WebData)
 import Components.LoadingSpinner exposing (view)
 import Date
@@ -38,7 +39,9 @@ view model =
             [ div [ class "container" ]
                 [ div [ class "columns" ]
                     [ div [ class "column is-8 is-offset-2" ]
-                        [ objectsResult ]
+                        [ sortingOptions model
+                        , objectsResult
+                        ]
                     ]
                 ]
             ]
@@ -76,12 +79,18 @@ dateStringFromModified modified =
             toString (Date.year date)
 
         hour =
-            toString (Date.hour date)
+            toString ((Date.hour date) % 12)
 
         minute =
             toString (Date.minute date)
+
+        meridiem =
+            if Date.hour date < 12 then
+                "AM"
+            else
+                "PM"
     in
-        month ++ " " ++ day ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute
+        month ++ " " ++ day ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ " " ++ meridiem
 
 
 iconForObjectType : String -> String
@@ -99,3 +108,47 @@ iconForObjectType objectType =
                     "fa fa-question"
     in
         faClass ++ " icon"
+
+
+sortingOptions : Model -> Html Msg
+sortingOptions model =
+    div [ class "sortingOptions" ]
+        [ span [ class "sortName", onClick (OrderObjects (Ordering Name (reverseOrder model))) ]
+            [ text "Name"
+            , nameSortIcon model
+            ]
+        , span [ class "sortModified", onClick (OrderObjects (Ordering Modified (reverseOrder model))) ]
+            [ text "Modified"
+            , modifiedSortIcon model
+            ]
+        ]
+
+
+nameSortIcon : Model -> Html Msg
+nameSortIcon model =
+    if model.ordering.field == Name then
+        if model.ordering.order == Ascending then
+            i [ attribute "aria-hidden" "true", class "fa fa-sort-asc icon" ] []
+        else
+            i [ attribute "aria-hidden" "true", class "fa fa-sort-desc icon" ] []
+    else
+        text ""
+
+
+modifiedSortIcon : Model -> Html Msg
+modifiedSortIcon model =
+    if model.ordering.field == Modified then
+        if model.ordering.order == Ascending then
+            i [ attribute "aria-hidden" "true", class "fa fa-sort-asc icon" ] []
+        else
+            i [ attribute "aria-hidden" "true", class "fa fa-sort-desc icon" ] []
+    else
+        text ""
+
+
+reverseOrder : Model -> Model.Order
+reverseOrder model =
+    if model.ordering.order == Ascending then
+        Descending
+    else
+        Ascending
