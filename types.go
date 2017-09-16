@@ -21,3 +21,19 @@ type AWS struct {
 func (aws AWS) create() HTTPStatus {
 	return http.StatusOK
 }
+
+func (aws AWS) read() HTTPStatus {
+	return http.StatusOK
+}
+
+func (aws AWS) update() HTTPStatus {
+	return http.StatusOK
+}
+
+func (aws AWS) delete() HTTPStatus {
+	return http.StatusOK
+}
+
+func initCloudFS(storage CloudStorage) {
+
+}
