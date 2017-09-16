@@ -19,18 +19,18 @@ var fileStorage = InitCloudFS(AWS{
 func tumbleEvents(event fsnotify.Event) {
 	switch event.Op {
 	case fsnotify.Create:
-		fileStorage.Create()
+		fileStorage.Create(event.Name)
 		fmt.Println("CREATED")
 	case fsnotify.Chmod:
 		fmt.Println("CHMOD")
 	case fsnotify.Remove:
-		fileStorage.Delete()
+		fileStorage.Delete(event.Name)
 		fmt.Println("REMOVED")
 	case fsnotify.Rename:
-		fileStorage.Update()
+		fileStorage.Update(event.Name)
 		fmt.Println("RENAME")
 	case fsnotify.Write:
-		fileStorage.Update()
+		fileStorage.Update(event.Name)
 		fmt.Println("WRITE")
 	default:
 		fmt.Println("NONACTION DEFAULT")
@@ -63,7 +63,8 @@ func daemon() {
 		}
 	}()
 
-	err = watcher.Add(pouchRoot)
+	fmt.Println("watching " + config.PouchRoot)
+	err = watcher.Add(config.PouchRoot)
 	if err != nil {
 		log.Fatal(err)
 	}
