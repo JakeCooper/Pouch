@@ -1,4 +1,4 @@
-#BASH SCRIPT: Register_my_new_app_and_its_extension.sh
+#! bin/bash
 APP="Pouch"
 EXT="pouch"
 COMMENT="$APP's data file"
@@ -39,5 +39,5 @@ echo "2\nPouch" | mimeopen -d test.pouch
 rm test.pouch
 
 # copy associated icons to pixmaps
-cp $APP.png                ~/.local/share/pixmaps
-cp application-x-$APP.png  ~/.local/share/pixmaps
+cp ./static/$APP.png                ~/.local/share/pixmaps
+cp ./static/application-x-$APP.png  ~/.local/share/pixmaps
