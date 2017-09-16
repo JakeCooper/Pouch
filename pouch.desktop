@@ -2,4 +2,4 @@
 Type=Application
 MimeType=application/pouch
 Name=Pouch
-Exec=pouch
+Exec=/usr/bin/pouch

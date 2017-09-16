@@ -1,0 +1,8 @@
+{
+  "name": "pouch",
+  "description": "Infinite Local Storage",
+  "memory": 128,
+  "timeout": 5,
+  "role": "arn:aws:iam::625012956098:role/pouch_lambda_function",
+  "environment": {}
+}
