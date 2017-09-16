@@ -41,10 +41,15 @@ type Configuration struct {
 // LoadSettings returns the Pouch config settings
 func LoadSettings() Configuration {
 	configuration := Configuration{}
-	p := path.Join(os.Getenv("HOME"), ".pouch/settings.json")
+	base := path.Join(os.Getenv("HOME"), ".pouch")
+	p := path.Join(base, "settings.json")
 
 	_, err := os.Stat(p)
 	if os.IsNotExist(err) {
+		err := os.Mkdir(base, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 		configuration.S3Root = generateBucketName()
 		configuration.PouchRoot = path.Join(os.Getenv("HOME"), "Pouch")
 		fmt.Printf("+%v", configuration)
