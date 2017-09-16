@@ -14,6 +14,7 @@ import (
 
 	"github.com/goamz/goamz/aws"
 	"github.com/goamz/goamz/s3"
+	"github.com/pkg/errors"
 )
 
 func checkAndFailure(err error) {
@@ -36,8 +37,6 @@ type Configuration struct {
 	PouchRoot string
 }
 
-var s3Bucket *s3.Bucket
-
 var config Configuration
 
 func loadSettings() Configuration {
@@ -49,17 +48,23 @@ func loadSettings() Configuration {
 	if configuration.PouchRoot == "" {
 		// User picks pouchroot
 	}
-	s3Bucket = nil
 	if configuration.S3Root == "" {
 		configuration.S3Root = generateBucketName()
 		fmt.Printf("+%v", configuration)
+
 		content, err := json.Marshal(configuration)
 		checkAndFailure(err)
+
 		err = ioutil.WriteFile("./.settings.json", content, 0644)
-		checkAndFailure(err)
-		s3Bucket = createS3Bucket(configuration.S3Root)
+		_, err = createS3Bucket(configuration.S3Root)
+		if err != nil {
+			panic(err)
+		}
 	} else {
-		s3Bucket = getS3Bucket(configuration.S3Root)
+		_, err := getS3Bucket(configuration.S3Root)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return configuration
@@ -77,31 +82,45 @@ func generateBucketName() string {
 	return RandStringRunes(16)
 }
 
-func createS3Bucket(bucketName string) *s3.Bucket {
-	fmt.Println(bucketName)
-
-	auth, err := aws.EnvAuth()
-	checkAndFailure(err)
-
-	conn := s3.New(auth, aws.USWest2)
-	bucket := conn.Bucket(bucketName)
-
+func createS3Bucket(bucketName string) (*s3.Bucket, error) {
+	bucket, err := getS3Bucket(bucketName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create bucket")
+	}
 	// Need a new bucket
 	err = bucket.PutBucket(s3.BucketOwnerFull)
-	checkAndFailure(err)
-
-	return bucket
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create bucket")
+	}
+	return bucket, nil
 }
 
-func getS3Bucket(bucketName string) *s3.Bucket {
+func getS3Bucket(bucketName string) (*s3.Bucket, error) {
 	fmt.Println(bucketName)
 
-	auth, err := aws.EnvAuth()
-	checkAndFailure(err)
+	auth, err := getAuth()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not connect to bucket")
+	}
 
-	conn := s3.New(auth, aws.USWest2)
+	conn := s3.New(*auth, aws.USWest2)
 	bucket := conn.Bucket(bucketName)
-	return bucket
+	return bucket, nil
+}
+
+func getAuth() (*aws.Auth, error) {
+	if os.Getenv("AWS_ACCESS_KEY_ID") == "" || os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
+		auth, err := aws.SharedAuth()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not authenticate through evars or through creds file")
+		}
+		return &auth, nil
+	}
+	auth, err := aws.EnvAuth()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not auth from envars")
+	}
+	return &auth, nil
 }
 
 func createPouch() {
@@ -116,7 +135,9 @@ func createPouch() {
 }
 
 func loadPouch() {
-	myFiles, err := s3Bucket.GetBucketContents()
+	myBucket, err := getS3Bucket(config.S3Root)
+	checkAndFailure(err)
+	myFiles, err := myBucket.GetBucketContents()
 	checkAndFailure(err)
 	for file := range *myFiles {
 		fmt.Printf("%s\n", config.PouchRoot+file)
@@ -140,7 +161,6 @@ func init() {
 
 func main() {
 	// setup()
-	fmt.Println(s3Bucket)
 	pullFromCloud()
 	daemon()
 }
