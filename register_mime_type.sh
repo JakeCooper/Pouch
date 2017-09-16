@@ -39,5 +39,5 @@ echo "2\nPouch" | mimeopen -d test.pouch
 rm test.pouch
 
 # copy associated icons to pixmaps
-# cp $APP.png                ~/.local/share/pixmaps
-# cp application-x-$APP.png  ~/.local/share/pixmaps
+cp $APP.png                ~/.local/share/pixmaps
+cp application-x-$APP.png  ~/.local/share/pixmaps
