@@ -19,9 +19,9 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 # Create application desktop
 echo "[Desktop Entry]
 Name=$APP
-Exec=launcher %U
+Exec=Pouch %U
 MimeType=application/x-$APP
-Icon=~/.local/share/icons/hicolor/48x48/apps/$EXT.png
+Icon=/home/andrei/.local/share/icons/hicolor/48x48/apps/pouch.png
 Terminal=false
 Type=Application"> ~/.local/share/applications/$APP.desktop
 
@@ -29,7 +29,7 @@ chmod 711 ~/.local/share/applications/$APP.desktop
 
 # copy associated icons to the icons folder
 # This also doesnt work........
-cp ./static/$EXT.png ~/.local/share/icons/hicolor/48x48/apps/
+sudo cp ./static/$EXT.png /usr/share/icons/hicolor/48x48/apps/
 
 # update databases for both application and mime
 update-desktop-database ~/.local/share/applications
