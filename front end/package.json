@@ -6,7 +6,7 @@
   "author": "Michael Reiter",
   "scripts": {
     "start": "webpack-dev-server --hot --inline",
-    "build": "rimraf dist && webpack"
+    "build": "rm -rf dist && webpack"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.6",
