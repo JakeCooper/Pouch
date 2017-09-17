@@ -23,6 +23,10 @@ type Head struct {
 	ContentType string `json:"Content-Type"`
 }
 
+type Wrap2 struct {
+	Body string `json:"body"`
+}
+
 type Wrapper struct {
 	StatusCode int    `json:"statusCode"`
 	Headers    Head   `json:"headers"`
