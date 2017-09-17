@@ -1,9 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -124,15 +129,87 @@ func RunDaemon(config *common.Configuration) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	RunPoller(config)
 	<-done
+}
+
+func glob(dir string, ext string) ([]string, error) {
+
+	files := []string{}
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if filepath.Ext(path) == ext {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	return files, err
+}
+
+func stringNotInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return false
+		}
+	}
+	return true
 }
 
 // RunPoller polls CloudStorage
 func RunPoller(config *common.Configuration) {
 	go func() {
 		for {
+			resp, err := http.Get("https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata")
+			if err != nil {
+				log.Fatal(err)
+			}
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+			var res []common.Metadata
+			err = json.Unmarshal(body, &res)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-			time.Sleep(time.Second * 10)
+			// Add new files
+			remoteFiles := map[string]bool{}
+			removeFileArray := []string{}
+			for _, file := range res {
+				_, errNoPouch := os.Stat(config.PouchRoot + file.FilePath)
+				_, errPouch := os.Stat(config.PouchRoot + file.FilePath + ".pouch")
+
+				if os.IsNotExist(errPouch) && os.IsNotExist(errNoPouch) {
+					// Make a pouch tombstone/folder for it
+					if file.ObjectType == "folder" {
+						os.MkdirAll(config.PouchRoot+file.FilePath, os.ModePerm)
+					} else {
+						common.DropTombstone(file.FilePath, config)
+					}
+				}
+				localFilePath := config.PouchRoot + file.FilePath
+				remoteFiles[strings.ToLower(localFilePath)] = true
+			}
+
+			filepath.Walk(config.PouchRoot, func(path string, f os.FileInfo, err error) error {
+				filePath := path
+				if f.IsDir() {
+					filePath += "/"
+				} else {
+					filePath = strings.Split(filePath, ".pouch")[0]
+				}
+				if remoteFiles[strings.ToLower(filePath)] == false && path != config.PouchRoot {
+					removeFileArray = append(removeFileArray, path)
+				}
+				return nil
+			})
+
+			for _, filePath := range removeFileArray {
+				os.Remove(filePath)
+			}
+
+			time.Sleep(time.Second * 2)
 		}
 	}()
 }
@@ -148,5 +225,4 @@ func main() {
 	settings := common.LoadSettings()
 	common.CreatePouch(&settings)
 	RunDaemon(&settings)
-	RunPoller(&settings)
 }
