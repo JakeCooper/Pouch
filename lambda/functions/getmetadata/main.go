@@ -24,7 +24,10 @@ func main() {
 			return nil, errors.New("Error while getting the files: " + err.Error())
 		}
 
-		var ret common.MetadataResponse
+		var ret common.Wrapper
+
+		var objects []common.Metadata
+
 		for k, v := range *m {
 			var tmp common.Metadata
 			tmp.FilePath = k
@@ -37,9 +40,14 @@ func main() {
 			tmpNames := strings.Split(strings.TrimRight(k, "/"), "/")
 			tmp.Name = tmpNames[len(tmpNames)-1]
 
-			ret.Objects = append(ret.Objects, tmp)
+			objects = append(objects, tmp)
 
 		}
+
+		ret.StatusCode = 200
+		ret.Headers.ContentType = "application/json"
+		tmp, _ := json.Marshal(objects)
+		ret.Body = string(tmp)
 
 		return ret, nil
 	})

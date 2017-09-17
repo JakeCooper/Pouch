@@ -19,6 +19,16 @@ type FileContext struct {
 	RawData  []byte `json:"raw_data"`
 }
 
+type Head struct {
+	ContentType string `json:"Content-Type"`
+}
+
+type Wrapper struct {
+	StatusCode int    `json:"statusCode"`
+	Headers    Head   `json:"headers"`
+	Body       string `json:"body"`
+}
+
 type MetadataResponse struct {
 	Objects []Metadata `json:"objects"`
 }
