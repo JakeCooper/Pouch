@@ -11,6 +11,12 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+type CloudObject struct {
+	Path string
+}
+
+var FileSystemChannel = make(chan CloudObject)
+
 func logIfErr(err error) {
 	if err != nil {
 		log.Println("[ERROR]", err)
@@ -68,6 +74,10 @@ func handleUpdate(relPath string, fs common.CloudStorage) {
 	}
 }
 
+func updateFileSystem(newObject CloudObject) {
+	fmt.Printf("New File Added! %+v\n", newObject)
+}
+
 // RunDaemon is the main function for watching the file system
 func RunDaemon(config *common.Configuration) {
 
@@ -91,6 +101,8 @@ func RunDaemon(config *common.Configuration) {
 			case event := <-common.GlobalWatcher.Events:
 				event.Name = common.RelativePath(event.Name, config.PouchRoot)
 				tumbleEvents(cloudStore, event, config)
+			case newObject := <-FileSystemChannel:
+				updateFileSystem(newObject)
 			case err := <-common.GlobalWatcher.Errors:
 				log.Println("error:", err)
 			}
@@ -105,6 +117,16 @@ func RunDaemon(config *common.Configuration) {
 	<-done
 }
 
+// RunPoller polls CloudStorage
+func RunPoller(config *common.Configuration) {
+	go func() {
+		for {
+
+			time.Sleep(time.Second * 10)
+		}
+	}()
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	watcher, err := fsnotify.NewWatcher()
@@ -116,4 +138,5 @@ func main() {
 	settings := common.LoadSettings()
 	common.CreatePouch(&settings)
 	RunDaemon(&settings)
+	RunPoller(&settings)
 }
