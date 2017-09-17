@@ -32,3 +32,4 @@ objectDecoder =
         |> required "objectType" Decode.string
         |> required "filePath" Decode.string
         |> required "modified" Decode.int
+        |> required "url" Decode.string

@@ -1,22 +1,25 @@
 {
     "objects": [
         {
-            "name" : "photos",
-            "objectType" : "folder",
-            "filePath" : "/home/MichaelReiter/depth",
-            "modified" : 1505567501864
+            "name": "photos",
+            "objectType": "folder",
+            "filePath": "/home/MichaelReiter/depth",
+            "modified": 1505567501864,
+            "url": ""
         },
         {
-            "name" : "documents",
-            "objectType" : "folder",
-            "filePath" : "/home/MichaelReiter/depth",
-            "modified" : 1505469501865
+            "name": "documents",
+            "objectType": "folder",
+            "filePath": "/home/MichaelReiter/depth",
+            "modified": 1505469501865,
+            "url": ""
         },
         {
-            "name" : "foo.c",
-            "objectType" : "file",
-            "filePath" : "/home/MichaelReiter/depth",
-            "modified" : 1505269501866
+            "name": "foo.c",
+            "objectType": "file",
+            "filePath": "/home/MichaelReiter/depth",
+            "modified": 1505269501866,
+            "url": "https://michaelreiter.github.io/res/michael-reiter-resume.pdf"
         }
     ]
 }
