@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/goamz/goamz/s3"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
@@ -39,7 +38,6 @@ func (s *CockroachCloudStorage) Create(fp string) error {
 	}
 	defer f.Close()
 
-	opts := s3.Options{}
 	create := "INSERT INTO files (path, size) VALUES ($1, $2)"
 	s.db.Exec(create, fp, stat.Size())
 	return nil
@@ -54,11 +52,11 @@ func (s *CockroachCloudStorage) Get(fp string) error {
 		return errors.Wrapf(err, "could not create file %s", p)
 	}
 	get := "SELECT from files where path = $1"
-	result, err := s.db.Exec(get, fp)
+	_, err = s.db.Exec(get, fp)
 	if err != nil {
 		log.Fatal(err)
 	}
-	file, err := os.Open(fp)
+	_, err = os.Open(fp)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,6 +72,7 @@ func (s *CockroachCloudStorage) Update(path string) error {
 // Delete a file on remote fs
 func (s *CockroachCloudStorage) Delete(path string) error {
 	//return s.bucket.Del(path)
+	return nil
 }
 
 // List all files on remote fs
