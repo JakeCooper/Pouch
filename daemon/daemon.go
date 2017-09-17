@@ -1,12 +1,9 @@
 package daemon
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -112,17 +109,40 @@ func RunDaemon(config *common.Configuration, sigChan chan bool) {
 		cfg: config,
 	}
 
+	// pollAllower := make(chan bool)
+
+	// go func() {
+	// 	canPoll := true
+	// 	ticker := time.NewTicker(time.Second * 2).C
+	// 	for {
+	// 		select {
+	// 		case state := <-pollAllower:
+	// 			canPoll = state
+	// 		case _ = <-ticker:
+	// 			if canPoll {
+	// 				sigChan <- true
+	// 			}
+	// 		}
+
+	// 	}
+	// }()
+
 	done := make(chan bool)
 	go func() {
 		for {
 			select {
 			case event := <-common.GlobalWatcher.Events:
+				// pollAllower <- false
+				// sentSignal = false
 				event.Name = common.RelativePath(event.Name, config.PouchRoot)
 				tumbleEvents(eh, event)
+
 			case err := <-common.GlobalWatcher.Errors:
 				log.Println("error:", err)
-			default:
-				sigChan <- true
+
+				// default:
+				// log.Println("blocking")
+				// pollAllower <- true
 			}
 		}
 	}()
@@ -159,62 +179,62 @@ func stringNotInSlice(a string, list []string) bool {
 }
 
 // RunPoller polls CloudStorage
-func RunPoller(config *common.Configuration, sigChan chan bool) {
-	go func() {
-		for _ = range sigChan {
-			time.Sleep(time.Second * 10)
-			resp, err := http.Get("https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata")
-			if err != nil {
-				log.Fatal(err)
-			}
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
-			var res []common.Metadata
-			err = json.Unmarshal(body, &res)
-			if err != nil {
-				log.Fatal(err)
-			}
+// func RunPoller(config *common.Configuration, sigChan chan bool) {
+// 	go func() {
+// 		for _ = range sigChan {
+// 			// time.Sleep(time.Second * 10)
+// 			resp, err := http.Get("https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata")
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			body, err := ioutil.ReadAll(resp.Body)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			var res []common.Metadata
+// 			err = json.Unmarshal(body, &res)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
 
-			// Add new files
-			remoteFiles := map[string]bool{}
-			removeFileArray := []string{}
-			for _, file := range res {
-				_, errNoPouch := os.Stat(config.PouchRoot + file.FilePath)
-				_, errPouch := os.Stat(config.PouchRoot + file.FilePath + ".pouch")
+// 			// Add new files
+// 			remoteFiles := map[string]bool{}
+// 			removeFileArray := []string{}
+// 			for _, file := range res {
+// 				_, errNoPouch := os.Stat(config.PouchRoot + file.FilePath)
+// 				_, errPouch := os.Stat(config.PouchRoot + file.FilePath + ".pouch")
 
-				if os.IsNotExist(errPouch) && os.IsNotExist(errNoPouch) {
-					// Make a pouch tombstone/folder for it
-					if file.ObjectType == "folder" {
-						os.MkdirAll(config.PouchRoot+file.FilePath, os.ModePerm)
-					} else {
-						common.DropTombstone(file.FilePath, config)
-					}
-				}
-				localFilePath := config.PouchRoot + file.FilePath
-				remoteFiles[strings.ToLower(localFilePath)] = true
-			}
+// 				if os.IsNotExist(errPouch) && os.IsNotExist(errNoPouch) {
+// 					// Make a pouch tombstone/folder for it
+// 					if file.ObjectType == "folder" {
+// 						os.MkdirAll(config.PouchRoot+file.FilePath, os.ModePerm)
+// 					} else {
+// 						common.DropTombstone(file.FilePath, config)
+// 					}
+// 				}
+// 				localFilePath := config.PouchRoot + file.FilePath
+// 				remoteFiles[strings.ToLower(localFilePath)] = true
+// 			}
 
-			filepath.Walk(config.PouchRoot, func(path string, f os.FileInfo, err error) error {
-				filePath := path
-				if f.IsDir() {
-					filePath += "/"
-				} else {
-					filePath = strings.Split(filePath, ".pouch")[0]
-				}
-				if remoteFiles[strings.ToLower(filePath)] == false && path != config.PouchRoot {
-					removeFileArray = append(removeFileArray, path)
-				}
-				return nil
-			})
+// 			filepath.Walk(config.PouchRoot, func(path string, f os.FileInfo, err error) error {
+// 				filePath := path
+// 				if f.IsDir() {
+// 					filePath += "/"
+// 				} else {
+// 					filePath = strings.Split(filePath, ".pouch")[0]
+// 				}
+// 				if remoteFiles[strings.ToLower(filePath)] == false && path != config.PouchRoot {
+// 					removeFileArray = append(removeFileArray, path)
+// 				}
+// 				return nil
+// 			})
 
-			for _, filePath := range removeFileArray {
-				os.Remove(filePath)
-			}
-		}
-	}()
-}
+// 			for _, filePath := range removeFileArray {
+// 				os.Remove(filePath)
+// 			}
+// 		}
+// 	}()
+// }
 
 // Start starts the file watching daemon
 func Start() {
