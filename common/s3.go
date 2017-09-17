@@ -2,10 +2,9 @@ package common
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
-
-	"io"
 
 	"github.com/goamz/goamz/s3"
 	"github.com/pkg/errors"
@@ -65,6 +64,12 @@ func (s *S3CloudStorage) Get(fp string) error {
 	if err != nil {
 		return errors.Wrap(err, "cannto copy bytes")
 	}
+
+	stat, err := os.Stat(p)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("file downloaded, %d bytes\n", stat.Size())
 
 	return nil
 }

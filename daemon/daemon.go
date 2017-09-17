@@ -20,20 +20,20 @@ func logIfErr(err error) {
 func tumbleEvents(fs common.CloudStorage, event fsnotify.Event, cfg *common.Configuration) {
 	switch event.Op {
 	case fsnotify.Create:
-		fmt.Println("CREATE")
+		fmt.Println("CREATE", event.Name)
 		handleCreate(event.Name, fs)
-	case fsnotify.Chmod:
+	// case fsnotify.Chmod:
 	case fsnotify.Remove:
-		fmt.Println("REMOVE")
+		fmt.Println("REMOVE", event.Name)
 		handleDelete(event.Name, fs, cfg)
 	case fsnotify.Rename:
-		fmt.Println("RENAME")
+		fmt.Println("RENAME", event.Name)
 		// err := fs.Delete(event.Name)
 		// logIfErr(err)
 		handleDelete(event.Name, fs, cfg)
 
 	case fsnotify.Write:
-		fmt.Println("WRITE")
+		fmt.Println("WRITE", event.Name)
 		handleUpdate(event.Name, fs)
 	default:
 		fmt.Println("NONACTION DEFAULT")
