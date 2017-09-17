@@ -99,6 +99,7 @@ func GetS3Bucket(bucketName string) (*s3.Bucket, error) {
 		return nil, errors.Wrap(err, "could not connect to bucket")
 	}
 
+	WriteToLog(fmt.Sprintf("Auth: %#v", auth))
 	conn := s3.New(*auth, aws.USWest2)
 	bucket := conn.Bucket(bucketName)
 	return bucket, nil

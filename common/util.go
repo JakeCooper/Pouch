@@ -10,6 +10,23 @@ import (
 	"os"
 )
 
+func WriteToLog(text string) {
+	fmt.Println(text)
+	filename := path.Join("/home/" + os.Getenv("USER") + "/log")
+	fmt.Println(filename)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		os.Create(filename)
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(text + "\n"); err != nil {
+		panic(err)
+	}
+
+}
+
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 // RandStringRunes returns a random string

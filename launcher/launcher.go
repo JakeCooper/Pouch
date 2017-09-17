@@ -12,26 +12,10 @@ import (
 	"github.com/JakeCooper/Pouch/common"
 )
 
-func WriteToLog(text string) {
-	fmt.Println(text)
-	filename := path.Join(os.Getenv("HOME"), ".pouch") + "/log"
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		panic(err)
-	}
-
-	defer f.Close()
-
-	if _, err = f.WriteString(text + "\n"); err != nil {
-		panic(err)
-	}
-
-}
-
 func heartBeat(file string) {
-	WriteToLog("Starting heartBeat : " + file)
+	common.WriteToLog("Starting heartBeat : " + file)
 	for range time.Tick(time.Second * 5) {
-		WriteToLog("getting: " + file)
+		common.WriteToLog("getting: " + file)
 	}
 }
 
@@ -41,24 +25,24 @@ func DownloadAndLaunch(fp string) {
 
 	cfg := common.LoadSettings()
 
-	WriteToLog("realfilePath: " + fmt.Sprintf("%v", cfg))
+	common.WriteToLog("realfilePath: " + fmt.Sprintf("%v", cfg))
 
-	WriteToLog("filePath: " + fp)
+	common.WriteToLog("filePath: " + fp)
 	go heartBeat(fp)
 
 	fullPath := path.Join(currentPath(), fp)
 	realFilePath := strings.Split(fullPath, ".pouch")[0]
 
-	WriteToLog("realfilePath:" + realFilePath)
+	common.WriteToLog("realfilePath:" + realFilePath)
 	if realFilePath != fullPath {
-		WriteToLog("Going and getting the file")
+		common.WriteToLog("Going and getting the file")
 
 		parts := strings.Split(realFilePath, cfg.PouchRoot)
 		relPath := parts[len(parts)-1]
 
 		bucket, err := common.GetS3Bucket(cfg.S3Root)
 		if err != nil {
-			WriteToLog("S3 Bucket was not found: " + cfg.S3Root)
+			common.WriteToLog("S3 Bucket was not found: " + cfg.S3Root)
 			panic(err)
 		}
 
@@ -66,26 +50,26 @@ func DownloadAndLaunch(fp string) {
 
 		err = store.Get(relPath)
 		if err != nil {
-			WriteToLog("could not get the relPath from the store: " + relPath)
+			common.WriteToLog("could not get the relPath from the store: " + relPath)
 			panic(err)
 		}
 
 		err = os.Remove(fullPath)
 		if err != nil {
-			WriteToLog("could not remove: " + fullPath + " error: " + err.Error())
+			common.WriteToLog("could not remove: " + fullPath + " error: " + err.Error())
 			//panic(err)
 		}
 
 	}
 
-	WriteToLog(realFilePath)
+	common.WriteToLog(realFilePath)
 	cmd := exec.Command("xdg-open", realFilePath)
 	err := cmd.Start()
 	if err != nil {
 		panic(err)
 	}
 
-	WriteToLog("Executed command")
+	common.WriteToLog("Executed command")
 
 	err = cmd.Wait()
 	if err != nil {
