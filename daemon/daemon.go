@@ -54,8 +54,8 @@ func (e *eventHandler) delete(fp string) {
 	} else {
 		fp = strings.Split(fp, ".pouch")[0]
 		fmt.Println("Deleting tombstone")
-		err := e.fs.Delete(fp)
-		logIfErr(err)
+		// err := e.fs.Delete(fp)
+		// logIfErr(err)
 	}
 	// e.mu.Unlock()
 }
