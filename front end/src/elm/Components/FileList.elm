@@ -8,6 +8,7 @@ import Model exposing (Model, CloudObject, ObjectType(..), Order(..), Ordering, 
 import RemoteData exposing (WebData)
 import Components.LoadingSpinner exposing (view)
 import Date
+import Date.Extra exposing (fromIsoString)
 
 
 view : Model -> Html Msg
@@ -78,34 +79,36 @@ linkAttributes object =
         [ class "file-link", href "" ]
 
 
-dateStringFromModified : Int -> String
+dateStringFromModified : String -> String
 dateStringFromModified modified =
-    let
-        date =
-            Date.fromTime (toFloat modified)
+    case Date.Extra.fromIsoString modified of
+        Just date ->
+            let
+                month =
+                    toString (Date.month date)
 
-        month =
-            toString (Date.month date)
+                day =
+                    toString (Date.day date)
 
-        day =
-            toString (Date.day date)
+                year =
+                    toString (Date.year date)
 
-        year =
-            toString (Date.year date)
+                hour =
+                    toString ((Date.hour date) % 12)
 
-        hour =
-            toString ((Date.hour date) % 12)
+                minute =
+                    toString (Date.minute date)
 
-        minute =
-            toString (Date.minute date)
+                meridiem =
+                    if Date.hour date < 12 then
+                        "AM"
+                    else
+                        "PM"
+            in
+                month ++ " " ++ day ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ " " ++ meridiem
 
-        meridiem =
-            if Date.hour date < 12 then
-                "AM"
-            else
-                "PM"
-    in
-        month ++ " " ++ day ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ " " ++ meridiem
+        Nothing ->
+            "Invalid date"
 
 
 iconForObjectType : String -> String

@@ -4,21 +4,21 @@
             "name": "photos",
             "objectType": "folder",
             "filePath": "/home/MichaelReiter/depth",
-            "modified": 1505567501864,
+            "modified": "2017-09-16T20:52:16.000Z",
             "url": ""
         },
         {
             "name": "documents",
             "objectType": "folder",
             "filePath": "/home/MichaelReiter/depth",
-            "modified": 1505469501865,
+            "modified": "2017-09-16T20:52:16.000Z",
             "url": ""
         },
         {
             "name": "foo.c",
             "objectType": "file",
             "filePath": "/home/MichaelReiter/depth",
-            "modified": 1505269501866,
+            "modified": "2017-09-16T20:52:16.000Z",
             "url": "https://michaelreiter.github.io/res/michael-reiter-resume.pdf"
         }
     ]

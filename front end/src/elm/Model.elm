@@ -29,7 +29,7 @@ type alias CloudObject =
     { name : String
     , objectType : String
     , filePath : String
-    , modified : Int
+    , modified : String
     , url : String
     }
 
