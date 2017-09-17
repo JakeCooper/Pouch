@@ -1,4 +1,4 @@
-package main
+package daemon
 
 import (
 	"encoding/json"
@@ -214,7 +214,8 @@ func RunPoller(config *common.Configuration) {
 	}()
 }
 
-func main() {
+// Start starts the file watching daemon
+func Start() {
 	rand.Seed(time.Now().UnixNano())
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
