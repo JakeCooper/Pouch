@@ -19,7 +19,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 # Create application desktop
 echo "[Desktop Entry]
 Name=$APP
-Exec=launcher %U
+Exec=Pouch %U
 MimeType=application/x-$APP
 Icon=~/.local/share/icons/hicolor/48x48/apps/$EXT.png
 Terminal=false

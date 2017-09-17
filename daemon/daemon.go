@@ -31,34 +31,36 @@ func logIfErr(err error) {
 }
 
 type eventHandler struct {
-	mu  sync.Mutex
+	mu  *sync.Mutex
 	fs  common.CloudStorage
 	cfg *common.Configuration
 }
 
 func (e *eventHandler) create(relPath string) {
 	if !common.IsPouchFile(relPath) {
-		e.mu.Lock()
-		defer e.mu.Unlock()
+		// e.mu.Lock()
+		// defer e.mu.Unlock()
 		err := e.fs.Create(relPath)
 		logIfErr(err)
 	}
 }
 
 func (e *eventHandler) delete(fp string) {
-	fmt.Println("deleting? file:", strings.Split(fp, ".pouch"))
-	e.mu.Lock()
+	fmt.Println("deleting? file:", fp)
+	// e.mu.Lock()
 	if !common.IsPouchFile(fp) {
 		// This is a real file
+		fp = strings.Split(fp, ".pouch")[0]
 		fmt.Println(fp, "is a real file, droping tombstone")
 		err := common.DropTombstone(fp, e.cfg)
 		logIfErr(err)
 	} else {
+		fp = strings.Split(fp, ".pouch")[0]
 		fmt.Println("Deleting tombstone")
 		err := e.fs.Delete(fp)
 		logIfErr(err)
 	}
-	e.mu.Unlock()
+	// e.mu.Unlock()
 }
 
 func tumbleEvents(eh *eventHandler, event fsnotify.Event) {
@@ -88,7 +90,7 @@ func updateFileSystem(newObject CloudObject) {
 }
 
 // RunDaemon is the main function for watching the file system
-func RunDaemon(config *common.Configuration) {
+func RunDaemon(config *common.Configuration, sigChan chan bool) {
 
 	bucket, err := common.GetS3Bucket(config.S3Root)
 	if err != nil {
@@ -103,8 +105,9 @@ func RunDaemon(config *common.Configuration) {
 	}
 	defer common.GlobalWatcher.Close()
 
+	mu := &sync.Mutex{}
 	eh := &eventHandler{
-		mu:  sync.Mutex{},
+		mu:  mu,
 		fs:  cloudStore,
 		cfg: config,
 	}
@@ -116,10 +119,10 @@ func RunDaemon(config *common.Configuration) {
 			case event := <-common.GlobalWatcher.Events:
 				event.Name = common.RelativePath(event.Name, config.PouchRoot)
 				tumbleEvents(eh, event)
-			case newObject := <-FileSystemChannel:
-				updateFileSystem(newObject)
 			case err := <-common.GlobalWatcher.Errors:
 				log.Println("error:", err)
+			default:
+				sigChan <- true
 			}
 		}
 	}()
@@ -129,7 +132,7 @@ func RunDaemon(config *common.Configuration) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	RunPoller(config)
+	// RunPoller(config, sigChan)
 	<-done
 }
 
@@ -156,9 +159,10 @@ func stringNotInSlice(a string, list []string) bool {
 }
 
 // RunPoller polls CloudStorage
-func RunPoller(config *common.Configuration) {
+func RunPoller(config *common.Configuration, sigChan chan bool) {
 	go func() {
-		for {
+		for _ = range sigChan {
+			time.Sleep(time.Second * 10)
 			resp, err := http.Get("https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata")
 			if err != nil {
 				log.Fatal(err)
@@ -208,8 +212,6 @@ func RunPoller(config *common.Configuration) {
 			for _, filePath := range removeFileArray {
 				os.Remove(filePath)
 			}
-
-			time.Sleep(time.Second * 2)
 		}
 	}()
 }
@@ -223,7 +225,9 @@ func Start() {
 	}
 	common.GlobalWatcher = watcher
 
+	sigChan := make(chan bool)
+
 	settings := common.LoadSettings()
 	common.CreatePouch(&settings)
-	RunDaemon(&settings)
+	RunDaemon(&settings, sigChan)
 }
