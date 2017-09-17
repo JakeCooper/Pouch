@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	//"os"
+	"os"
 
 	"errors"
 	"github.com/JakeCooper/Pouch/common"
@@ -12,19 +12,20 @@ import (
 
 func main() {
 	apex.HandleFunc(func(event json.RawMessage, ctx *apex.Context) (interface{}, error) {
-		var m common.CreateRequest
+		var m common.FileContext
 
 		if err := json.Unmarshal(event, &m); err != nil {
 			return nil, errors.New("Error while marshaling JSON: " + err.Error())
 		}
 
-		s := "czrCiWIPIDotRtoQ"
-		bucket, err := common.GetS3Bucket(s)
+		bucketName := os.Getenv("S3Root")
+
+		bucket, err := common.GetS3Bucket(bucketName)
 		if err != nil {
 			return nil, errors.New("Error while getting S3 Bucket: " + err.Error())
 		}
 
-		err = bucket.Put("/test", []byte(s), "text", s3.BucketOwnerFull, s3.Options{})
+		err = bucket.Put(m.FileName, m.RawData, "text", s3.BucketOwnerFull, s3.Options{})
 		if err != nil {
 			return nil, errors.New("Error while putting into bucket:" + err.Error())
 		}
