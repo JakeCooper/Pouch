@@ -48,21 +48,21 @@ viewFilesBox model objects =
             [ sortingOptions model
             , div [ class "box" ]
                 [ ul [ class "objects-list" ]
-                    (List.map viewObject objects)
+                    (List.map (viewObject model) objects)
                 ]
             ]
     else
         text "No files found"
 
 
-viewObject : CloudObject -> Html Msg
-viewObject object =
+viewObject : Model -> CloudObject -> Html Msg
+viewObject model object =
     li [ class "object" ]
         [ div []
             [ i [ attribute "aria-hidden" "true", class (iconForObjectType object.objectType) ]
                 []
-            , a (linkAttributes object)
-                [ text object.name ]
+            , a (linkAttributes model object)
+                [ viewObjectName object ]
             , i [ attribute "aria-hidden" "true", class "fa fa-ellipsis-h options" ]
                 []
             , span [ class "modified" ]
@@ -71,12 +71,20 @@ viewObject object =
         ]
 
 
-linkAttributes : CloudObject -> List (Html.Attribute Msg)
-linkAttributes object =
-    if object.objectType == "file" then
-        [ class "file-link", href object.url, download True ]
+viewObjectName : CloudObject -> Html Msg
+viewObjectName object =
+    if String.length object.name < 64 then
+        text object.name
     else
-        [ class "file-link", href "" ]
+        text ((String.left 64 object.name) ++ "...")
+
+
+linkAttributes : Model -> CloudObject -> List (Html.Attribute Msg)
+linkAttributes model object =
+    if object.objectType == "file" then
+        [ class "file-link", onClick (OnClickFile object) ]
+    else
+        [ class "file-link", onClick (UpdateCurrentPath (model.currentPath ++ object.name ++ "/")) ]
 
 
 dateStringFromModified : String -> String

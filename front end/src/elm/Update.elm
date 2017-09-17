@@ -3,14 +3,14 @@ module Update exposing (update)
 import Messages exposing (Msg(..))
 import Model exposing (Model, Field(..), Order(..), CloudObject)
 import RemoteData exposing (WebData, succeed)
-import Commands exposing (pollForObjects)
+import Commands exposing (pollForObjects, fetchSignedFile)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnPollForObjects response ->
-            ( { model | objects = response, filteredObjects = response }, Cmd.none )
+            ( { model | objects = response, filteredObjects = folderFilter model response }, Cmd.none )
 
         OrderObjects newOrdering ->
             case model.filteredObjects of
@@ -57,6 +57,45 @@ update msg model =
 
         Tick _ ->
             ( model, pollForObjects )
+
+        UpdateCurrentPath newPath ->
+            ( { model | currentPath = newPath }, Cmd.none )
+
+        OnClickFile object ->
+            ( model, fetchSignedFile object.filePath )
+
+        OnReceiveFileUrl urlObject ->
+            case urlObject of
+                Ok value ->
+                    ( { model | signedUrl = value.url }, Cmd.none )
+
+                Err msg ->
+                    ( model, Cmd.none )
+
+
+folderFilter : Model -> WebData (List CloudObject) -> WebData (List CloudObject)
+folderFilter model response =
+    case response of
+        RemoteData.NotAsked ->
+            response
+
+        RemoteData.Loading ->
+            response
+
+        RemoteData.Success objects ->
+            let
+                filteredItems =
+                    List.filter (onlyCurrentFolder model) objects
+            in
+                succeed filteredItems
+
+        RemoteData.Failure error ->
+            response
+
+
+onlyCurrentFolder : Model -> CloudObject -> Bool
+onlyCurrentFolder model object =
+    String.startsWith model.currentPath object.filePath
 
 
 filterFunction : String -> CloudObject -> Bool

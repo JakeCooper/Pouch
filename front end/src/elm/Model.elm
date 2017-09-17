@@ -1,4 +1,4 @@
-module Model exposing (Model, CloudObject, ObjectType(..), initialModel, Ordering, Order(..), Field(..))
+module Model exposing (Model, CloudObject, ObjectType(..), initialModel, Ordering, Order(..), Field(..), FileUrlObject)
 
 import RemoteData exposing (WebData)
 
@@ -9,6 +9,8 @@ initialModel =
     , filteredObjects = RemoteData.Loading
     , ordering = Ordering Name Ascending
     , query = ""
+    , currentPath = ""
+    , signedUrl = ""
     }
 
 
@@ -17,6 +19,8 @@ type alias Model =
     , filteredObjects : WebData (List CloudObject)
     , ordering : Ordering
     , query : String
+    , currentPath : String
+    , signedUrl : String
     }
 
 
@@ -30,6 +34,11 @@ type alias CloudObject =
     , objectType : String
     , filePath : String
     , modified : String
+    }
+
+
+type alias FileUrlObject =
+    { url : String
     }
 
 

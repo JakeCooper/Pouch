@@ -2,9 +2,9 @@ module Subscriptions exposing (..)
 
 import Messages exposing (Msg(..))
 import Model exposing (Model)
-import Time exposing (every, second)
+import Time exposing (every, minute)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every second Tick
+    every minute Tick
