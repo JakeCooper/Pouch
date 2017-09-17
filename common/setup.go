@@ -42,7 +42,7 @@ type Configuration struct {
 // LoadSettings returns the Pouch config settings
 func LoadSettings() Configuration {
 	configuration := Configuration{}
-	base := path.Join(os.Getenv("HOME"), ".pouch")
+	base := path.Join("/home/"+os.Getenv("USER"), ".pouch")
 	p := path.Join(base, "settings.json")
 
 	_, err := os.Stat(p)

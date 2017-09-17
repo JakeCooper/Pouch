@@ -9,7 +9,7 @@ mkdir -p ~/.local/share/mime/application/
 # Create mime xml (this doesnt work)
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">
-    <mime-type type=\"application/x-$APP\">
+    <mime-type type=\"*\">
         <comment>$COMMENT</comment>
         <icon name=\"application-x-$APP\"/>
         <glob pattern=\"*.$EXT\"/>
@@ -19,10 +19,10 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 # Create application desktop
 echo "[Desktop Entry]
 Name=$APP
-Exec=Pouch %U
+Terminal=false
+Exec=/usr/local/bin/Pouch %n
 MimeType=application/x-$APP
 Icon=/home/andrei/.local/share/icons/hicolor/48x48/apps/pouch.png
-Terminal=false
 Type=Application"> ~/.local/share/applications/$APP.desktop
 
 chmod 711 ~/.local/share/applications/$APP.desktop
