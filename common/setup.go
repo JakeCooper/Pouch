@@ -11,10 +11,13 @@ import (
 	"path"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/goamz/goamz/aws"
 	"github.com/goamz/goamz/s3"
 	"github.com/pkg/errors"
 )
+
+var GlobalWatcher *fsnotify.Watcher
 
 func checkAndFailure(err error) {
 	if err != nil {
@@ -145,6 +148,7 @@ func loadPouch(config *Configuration) error {
 		if string(file[len(file)-1]) == "/" {
 			// directory
 			os.MkdirAll(config.PouchRoot+file, os.ModePerm)
+			GlobalWatcher.Add(config.PouchRoot + file)
 		} else {
 			// file
 			filePtr, err := os.Create(config.PouchRoot + file + ".pouch")

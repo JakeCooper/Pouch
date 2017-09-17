@@ -70,10 +70,6 @@ func handleUpdate(relPath string, fs common.CloudStorage) {
 
 // RunDaemon is the main function for watching the file system
 func RunDaemon(config *common.Configuration) {
-	// usrHome, err := user.Current()
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	bucket, err := common.GetS3Bucket(config.S3Root)
 	if err != nil {
@@ -83,27 +79,26 @@ func RunDaemon(config *common.Configuration) {
 	cloudStore := common.NewS3CloudStorage(config, bucket)
 
 	// Watch for file changes in root file
-	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer watcher.Close()
+	defer common.GlobalWatcher.Close()
 
 	done := make(chan bool)
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
+			case event := <-common.GlobalWatcher.Events:
 				event.Name = common.RelativePath(event.Name, config.PouchRoot)
 				tumbleEvents(cloudStore, event, config)
-			case err := <-watcher.Errors:
+			case err := <-common.GlobalWatcher.Errors:
 				log.Println("error:", err)
 			}
 		}
 	}()
 
 	fmt.Println("watching " + config.PouchRoot)
-	err = watcher.Add(config.PouchRoot)
+	err = common.GlobalWatcher.Add(config.PouchRoot)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -112,6 +107,12 @@ func RunDaemon(config *common.Configuration) {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	common.GlobalWatcher = watcher
+
 	settings := common.LoadSettings()
 	common.CreatePouch(&settings)
 	RunDaemon(&settings)
