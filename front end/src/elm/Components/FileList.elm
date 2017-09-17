@@ -1,7 +1,7 @@
 module Components.FileList exposing (view)
 
 import Html exposing (Html, div, ul, li, i, text, button, a, span, p, br)
-import Html.Attributes exposing (class, src, attribute, href)
+import Html.Attributes exposing (class, src, attribute, href, download)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
 import Model exposing (Model, CloudObject, ObjectType(..), Order(..), Ordering, Field(..))
@@ -60,7 +60,7 @@ viewObject object =
         [ div []
             [ i [ attribute "aria-hidden" "true", class (iconForObjectType object.objectType) ]
                 []
-            , a [ class "file-link", href "/" ]
+            , a (linkAttributes object)
                 [ text object.name ]
             , i [ attribute "aria-hidden" "true", class "fa fa-ellipsis-h options" ]
                 []
@@ -68,6 +68,14 @@ viewObject object =
                 [ text (dateStringFromModified object.modified) ]
             ]
         ]
+
+
+linkAttributes : CloudObject -> List (Html.Attribute Msg)
+linkAttributes object =
+    if object.objectType == "file" then
+        [ class "file-link", href object.url, download (object.objectType == "file") ]
+    else
+        [ class "file-link", href "" ]
 
 
 dateStringFromModified : Int -> String
