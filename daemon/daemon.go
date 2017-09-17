@@ -1,12 +1,9 @@
 package daemon
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,34 +28,36 @@ func logIfErr(err error) {
 }
 
 type eventHandler struct {
-	mu  sync.Mutex
+	mu  *sync.Mutex
 	fs  common.CloudStorage
 	cfg *common.Configuration
 }
 
 func (e *eventHandler) create(relPath string) {
 	if !common.IsPouchFile(relPath) {
-		e.mu.Lock()
-		defer e.mu.Unlock()
+		// e.mu.Lock()
+		// defer e.mu.Unlock()
 		err := e.fs.Create(relPath)
 		logIfErr(err)
 	}
 }
 
 func (e *eventHandler) delete(fp string) {
-	fmt.Println("deleting? file:", strings.Split(fp, ".pouch"))
-	e.mu.Lock()
+	fmt.Println("deleting? file:", fp)
+	// e.mu.Lock()
 	if !common.IsPouchFile(fp) {
 		// This is a real file
+		fp = strings.Split(fp, ".pouch")[0]
 		fmt.Println(fp, "is a real file, droping tombstone")
 		err := common.DropTombstone(fp, e.cfg)
 		logIfErr(err)
 	} else {
+		fp = strings.Split(fp, ".pouch")[0]
 		fmt.Println("Deleting tombstone")
 		err := e.fs.Delete(fp)
 		logIfErr(err)
 	}
-	e.mu.Unlock()
+	// e.mu.Unlock()
 }
 
 func tumbleEvents(eh *eventHandler, event fsnotify.Event) {
@@ -88,7 +87,7 @@ func updateFileSystem(newObject CloudObject) {
 }
 
 // RunDaemon is the main function for watching the file system
-func RunDaemon(config *common.Configuration) {
+func RunDaemon(config *common.Configuration, sigChan chan bool) {
 
 	bucket, err := common.GetS3Bucket(config.S3Root)
 	if err != nil {
@@ -103,23 +102,47 @@ func RunDaemon(config *common.Configuration) {
 	}
 	defer common.GlobalWatcher.Close()
 
+	mu := &sync.Mutex{}
 	eh := &eventHandler{
-		mu:  sync.Mutex{},
+		mu:  mu,
 		fs:  cloudStore,
 		cfg: config,
 	}
+
+	// pollAllower := make(chan bool)
+
+	// go func() {
+	// 	canPoll := true
+	// 	ticker := time.NewTicker(time.Second * 2).C
+	// 	for {
+	// 		select {
+	// 		case state := <-pollAllower:
+	// 			canPoll = state
+	// 		case _ = <-ticker:
+	// 			if canPoll {
+	// 				sigChan <- true
+	// 			}
+	// 		}
+
+	// 	}
+	// }()
 
 	done := make(chan bool)
 	go func() {
 		for {
 			select {
 			case event := <-common.GlobalWatcher.Events:
+				// pollAllower <- false
+				// sentSignal = false
 				event.Name = common.RelativePath(event.Name, config.PouchRoot)
 				tumbleEvents(eh, event)
-			case newObject := <-FileSystemChannel:
-				updateFileSystem(newObject)
+
 			case err := <-common.GlobalWatcher.Errors:
 				log.Println("error:", err)
+
+				// default:
+				// log.Println("blocking")
+				// pollAllower <- true
 			}
 		}
 	}()
@@ -129,7 +152,7 @@ func RunDaemon(config *common.Configuration) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	RunPoller(config)
+	// RunPoller(config, sigChan)
 	<-done
 }
 
@@ -156,63 +179,62 @@ func stringNotInSlice(a string, list []string) bool {
 }
 
 // RunPoller polls CloudStorage
-func RunPoller(config *common.Configuration) {
-	go func() {
-		for {
-			resp, err := http.Get("https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata")
-			if err != nil {
-				log.Fatal(err)
-			}
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
-			var res []common.Metadata
-			err = json.Unmarshal(body, &res)
-			if err != nil {
-				log.Fatal(err)
-			}
+// func RunPoller(config *common.Configuration, sigChan chan bool) {
+// 	go func() {
+// 		for _ = range sigChan {
+// 			// time.Sleep(time.Second * 10)
+// 			resp, err := http.Get("https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata")
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			body, err := ioutil.ReadAll(resp.Body)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			var res []common.Metadata
+// 			err = json.Unmarshal(body, &res)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
 
-			// Add new files
-			remoteFiles := map[string]bool{}
-			removeFileArray := []string{}
-			for _, file := range res {
-				_, errNoPouch := os.Stat(config.PouchRoot + file.FilePath)
-				_, errPouch := os.Stat(config.PouchRoot + file.FilePath + ".pouch")
+// 			// Add new files
+// 			remoteFiles := map[string]bool{}
+// 			removeFileArray := []string{}
+// 			for _, file := range res {
+// 				_, errNoPouch := os.Stat(config.PouchRoot + file.FilePath)
+// 				_, errPouch := os.Stat(config.PouchRoot + file.FilePath + ".pouch")
 
-				if os.IsNotExist(errPouch) && os.IsNotExist(errNoPouch) {
-					// Make a pouch tombstone/folder for it
-					if file.ObjectType == "folder" {
-						os.MkdirAll(config.PouchRoot+file.FilePath, os.ModePerm)
-					} else {
-						common.DropTombstone(file.FilePath, config)
-					}
-				}
-				localFilePath := config.PouchRoot + file.FilePath
-				remoteFiles[strings.ToLower(localFilePath)] = true
-			}
+// 				if os.IsNotExist(errPouch) && os.IsNotExist(errNoPouch) {
+// 					// Make a pouch tombstone/folder for it
+// 					if file.ObjectType == "folder" {
+// 						os.MkdirAll(config.PouchRoot+file.FilePath, os.ModePerm)
+// 					} else {
+// 						common.DropTombstone(file.FilePath, config)
+// 					}
+// 				}
+// 				localFilePath := config.PouchRoot + file.FilePath
+// 				remoteFiles[strings.ToLower(localFilePath)] = true
+// 			}
 
-			filepath.Walk(config.PouchRoot, func(path string, f os.FileInfo, err error) error {
-				filePath := path
-				if f.IsDir() {
-					filePath += "/"
-				} else {
-					filePath = strings.Split(filePath, ".pouch")[0]
-				}
-				if remoteFiles[strings.ToLower(filePath)] == false && path != config.PouchRoot {
-					removeFileArray = append(removeFileArray, path)
-				}
-				return nil
-			})
+// 			filepath.Walk(config.PouchRoot, func(path string, f os.FileInfo, err error) error {
+// 				filePath := path
+// 				if f.IsDir() {
+// 					filePath += "/"
+// 				} else {
+// 					filePath = strings.Split(filePath, ".pouch")[0]
+// 				}
+// 				if remoteFiles[strings.ToLower(filePath)] == false && path != config.PouchRoot {
+// 					removeFileArray = append(removeFileArray, path)
+// 				}
+// 				return nil
+// 			})
 
-			for _, filePath := range removeFileArray {
-				os.Remove(filePath)
-			}
-
-			time.Sleep(time.Second * 2)
-		}
-	}()
-}
+// 			for _, filePath := range removeFileArray {
+// 				os.Remove(filePath)
+// 			}
+// 		}
+// 	}()
+// }
 
 // Start starts the file watching daemon
 func Start() {
@@ -223,7 +245,9 @@ func Start() {
 	}
 	common.GlobalWatcher = watcher
 
+	sigChan := make(chan bool)
+
 	settings := common.LoadSettings()
 	common.CreatePouch(&settings)
-	RunDaemon(&settings)
+	RunDaemon(&settings, sigChan)
 }
