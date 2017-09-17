@@ -14,6 +14,11 @@ type CloudStorage interface {
 	List() ([]string, error)
 }
 
-type CreateRequest struct {
-	FileName string `json:fileName`
+type FileContext struct {
+	FileName string `json:"filename"`
+	RawData  []byte `json:"raw_data"`
+}
+
+type MetadataResponse struct {
+	Objects []Metadata `json:"objects"`
 }
