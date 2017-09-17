@@ -48,9 +48,13 @@ export AWS_REGION="us-west-2"
 
 Now from the lambdas folder run apex deploy 
 
-in the daemon directory (must be done first)
+in the root directory (must be done first)
 
-`go build daemon.go && ./daemon`
+```
+go build
+mv Pouch /usr/bin/
+Pouch
+```
 
 In the lambda directory
 
