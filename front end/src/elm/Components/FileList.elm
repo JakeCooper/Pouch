@@ -73,7 +73,7 @@ viewObject object =
 linkAttributes : CloudObject -> List (Html.Attribute Msg)
 linkAttributes object =
     if object.objectType == "file" then
-        [ class "file-link", href object.url, download (object.objectType == "file") ]
+        [ class "file-link", href object.url, download True ]
     else
         [ class "file-link", href "" ]
 
@@ -128,12 +128,12 @@ iconForObjectType objectType =
 sortingOptions : Model -> Html Msg
 sortingOptions model =
     div [ class "sortingOptions" ]
-        [ span [ class "sortName", onClick (OrderObjects (Ordering Name (reverseOrder model))) ]
-            [ text "Name"
+        [ span [ class "sort sortName", onClick (OrderObjects (Ordering Name (reverseOrder model))) ]
+            [ span [] [ text "Name" ]
             , nameSortIcon model
             ]
-        , span [ class "sortModified", onClick (OrderObjects (Ordering Modified (reverseOrder model))) ]
-            [ text "Modified"
+        , span [ class "sort sortModified", onClick (OrderObjects (Ordering Modified (reverseOrder model))) ]
+            [ span [] [ text "Modified" ]
             , modifiedSortIcon model
             ]
         ]
