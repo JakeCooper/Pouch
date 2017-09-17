@@ -4,7 +4,7 @@ import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (decode, required)
 import Messages exposing (Msg(..))
-import Model exposing (CloudObject, FileUrlObject)
+import Model exposing (CloudObject)
 import RemoteData
 
 

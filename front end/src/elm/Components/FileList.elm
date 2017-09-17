@@ -84,7 +84,7 @@ linkAttributes model object =
     if object.objectType == "file" then
         [ class "file-link", onClick (DownloadFile object.filePath) ]
     else
-        [ class "file-link", onClick (UpdateCurrentPath (model.currentPath ++ object.name ++ "/")) ]
+        [ class "file-link" ]
 
 
 dateStringFromModified : String -> String
