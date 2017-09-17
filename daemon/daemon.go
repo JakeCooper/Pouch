@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	"github.com/JakeCooper/Pouch/common"
 	"github.com/fsnotify/fsnotify"
 )
@@ -17,54 +19,56 @@ func logIfErr(err error) {
 	}
 }
 
-func tumbleEvents(fs common.CloudStorage, event fsnotify.Event, cfg *common.Configuration) {
-	switch event.Op {
-	case fsnotify.Create:
-		fmt.Println("CREATE", event.Name)
-		handleCreate(event.Name, fs)
-	// case fsnotify.Chmod:
-	case fsnotify.Remove:
-		fmt.Println("REMOVE", event.Name)
-		handleDelete(event.Name, fs, cfg)
-	case fsnotify.Rename:
-		fmt.Println("RENAME", event.Name)
-		// err := fs.Delete(event.Name)
-		// logIfErr(err)
-		handleDelete(event.Name, fs, cfg)
-
-	case fsnotify.Write:
-		fmt.Println("WRITE", event.Name)
-		handleUpdate(event.Name, fs)
-	default:
-		fmt.Println("NONACTION DEFAULT")
-	}
+type eventHandler struct {
+	mu  sync.Mutex
+	fs  common.CloudStorage
+	cfg *common.Configuration
 }
 
-func handleCreate(relPath string, fs common.CloudStorage) {
+func (e *eventHandler) create(relPath string) {
 	if !common.IsPouchFile(relPath) {
-		err := fs.Create(relPath)
+		e.mu.Lock()
+		defer e.mu.Unlock()
+		err := e.fs.Create(relPath)
 		logIfErr(err)
 	}
 }
 
-func handleDelete(fp string, fs common.CloudStorage, cfg *common.Configuration) {
-	fmt.Println(strings.Split(fp, ".pouch"))
+func (e *eventHandler) delete(fp string) {
+	fmt.Println("deleting? file:", strings.Split(fp, ".pouch"))
+	e.mu.Lock()
 	if !common.IsPouchFile(fp) {
-		// This is a pouchfile
-		fmt.Println("Gonna drop a tombstone")
-		err := common.DropTombstone(fp, cfg)
+		// This is a real file
+		fmt.Println(fp, "is a real file, droping tombstone")
+		err := common.DropTombstone(fp, e.cfg)
 		logIfErr(err)
 	} else {
-		err := fs.Delete(fp)
+		fmt.Println("Deleting tombstone")
+		err := e.fs.Delete(fp)
 		logIfErr(err)
-
 	}
+	e.mu.Unlock()
 }
 
-func handleUpdate(relPath string, fs common.CloudStorage) {
-	if !common.IsPouchFile(relPath) {
-		err := fs.Update(relPath)
-		logIfErr(err)
+func tumbleEvents(eh *eventHandler, event fsnotify.Event) {
+	switch event.Op {
+	case fsnotify.Create:
+		fmt.Println("CREATE, file is:", event.Name)
+		// eh.create(event.Name)
+	case fsnotify.Chmod:
+		fmt.Println("CHMOD")
+	case fsnotify.Remove:
+		fmt.Println("REMOVE, old file is:", event.Name)
+		eh.delete(event.Name)
+	case fsnotify.Rename:
+		fmt.Println("RENAME, old file is:", event.Name)
+		eh.delete(event.Name)
+	case fsnotify.Write:
+		fmt.Println("WRITE, old file is:", event.Name)
+		eh.create(event.Name)
+	default:
+		fmt.Println("EVENT:", event.String())
+		fmt.Println("NONACTION DEFAULT")
 	}
 }
 
@@ -84,13 +88,19 @@ func RunDaemon(config *common.Configuration) {
 	}
 	defer common.GlobalWatcher.Close()
 
+	eh := &eventHandler{
+		mu:  sync.Mutex{},
+		fs:  cloudStore,
+		cfg: config,
+	}
+
 	done := make(chan bool)
 	go func() {
 		for {
 			select {
 			case event := <-common.GlobalWatcher.Events:
 				event.Name = common.RelativePath(event.Name, config.PouchRoot)
-				tumbleEvents(cloudStore, event, config)
+				tumbleEvents(eh, event)
 			case err := <-common.GlobalWatcher.Errors:
 				log.Println("error:", err)
 			}
