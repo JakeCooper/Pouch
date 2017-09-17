@@ -1,4 +1,4 @@
-module Commands exposing (..)
+module Commands exposing (pollForObjects)
 
 import Http
 import Json.Decode as Decode
@@ -8,16 +8,16 @@ import Model exposing (CloudObject)
 import RemoteData
 
 
-fetchObjects : Cmd Msg
-fetchObjects =
-    Http.get fetchObjectsUrl objectsDecoder
+pollForObjects : Cmd Msg
+pollForObjects =
+    Http.get pollForObjectsUrl objectsDecoder
         |> RemoteData.sendRequest
-        |> Cmd.map OnFetchObjects
+        |> Cmd.map OnPollForObjects
 
 
-fetchObjectsUrl : String
-fetchObjectsUrl =
-    "http://localhost:3000/objects"
+pollForObjectsUrl : String
+pollForObjectsUrl =
+    "https://smpzbbu1uk.execute-api.us-west-2.amazonaws.com/prod/pouch_getmetadata"
 
 
 objectsDecoder : Decode.Decoder (List CloudObject)
@@ -32,4 +32,3 @@ objectDecoder =
         |> required "objectType" Decode.string
         |> required "filePath" Decode.string
         |> required "modified" Decode.string
-        |> required "url" Decode.string

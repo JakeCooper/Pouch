@@ -3,12 +3,13 @@ module Update exposing (update)
 import Messages exposing (Msg(..))
 import Model exposing (Model, Field(..), Order(..), CloudObject)
 import RemoteData exposing (WebData, succeed)
+import Commands exposing (pollForObjects)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OnFetchObjects response ->
+        OnPollForObjects response ->
             ( { model | objects = response, filteredObjects = response }, Cmd.none )
 
         OrderObjects newOrdering ->
@@ -53,6 +54,9 @@ update msg model =
 
                 RemoteData.Failure error ->
                     ( model, Cmd.none )
+
+        Tick _ ->
+            ( model, pollForObjects )
 
 
 filterFunction : String -> CloudObject -> Bool

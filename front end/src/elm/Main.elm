@@ -6,12 +6,12 @@ import Messages exposing (Msg(..))
 import Model exposing (Model, initialModel)
 import Update exposing (update)
 import View exposing (view)
-import Commands exposing (fetchObjects)
+import Commands exposing (pollForObjects)
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, fetchObjects )
+    ( initialModel, pollForObjects )
 
 
 main : Program Never Model Msg

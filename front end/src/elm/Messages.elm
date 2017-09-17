@@ -2,9 +2,11 @@ module Messages exposing (Msg(..))
 
 import Model exposing (CloudObject, Ordering)
 import RemoteData exposing (WebData)
+import Time exposing (Time)
 
 
 type Msg
-    = OnFetchObjects (WebData (List CloudObject))
+    = OnPollForObjects (WebData (List CloudObject))
     | OrderObjects Ordering
     | UpdateQuery String
+    | Tick Time
