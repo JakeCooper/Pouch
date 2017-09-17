@@ -3,7 +3,7 @@ module Update exposing (update)
 import Messages exposing (Msg(..))
 import Model exposing (Model, Field(..), Order(..), CloudObject)
 import RemoteData exposing (WebData, succeed)
-import Commands exposing (pollForObjects, fetchSignedFile, download)
+import Commands exposing (pollForObjects, download)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -60,17 +60,6 @@ update msg model =
 
         UpdateCurrentPath newPath ->
             ( { model | currentPath = newPath }, Cmd.none )
-
-        OnClickFile object ->
-            ( model, fetchSignedFile object.filePath )
-
-        OnReceiveFileUrl urlObject ->
-            case urlObject of
-                Ok value ->
-                    ( { model | signedUrl = value.url }, Cmd.none )
-
-                Err msg ->
-                    ( model, Cmd.none )
 
         DownloadFile filePath ->
             ( model, download filePath )

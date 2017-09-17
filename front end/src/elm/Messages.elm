@@ -12,6 +12,4 @@ type Msg
     | UpdateQuery String
     | Tick Time
     | UpdateCurrentPath String
-    | OnClickFile CloudObject
-    | OnReceiveFileUrl (Result Http.Error FileUrlObject)
     | DownloadFile String
