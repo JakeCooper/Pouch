@@ -82,7 +82,7 @@ viewObjectName object =
 linkAttributes : Model -> CloudObject -> List (Html.Attribute Msg)
 linkAttributes model object =
     if object.objectType == "file" then
-        [ class "file-link", onClick (OnClickFile object) ]
+        [ class "file-link", onClick (DownloadFile object.filePath) ]
     else
         [ class "file-link", onClick (UpdateCurrentPath (model.currentPath ++ object.name ++ "/")) ]
 

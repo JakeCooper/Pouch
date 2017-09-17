@@ -14,3 +14,4 @@ type Msg
     | UpdateCurrentPath String
     | OnClickFile CloudObject
     | OnReceiveFileUrl (Result Http.Error FileUrlObject)
+    | DownloadFile String

@@ -1,4 +1,4 @@
-module Commands exposing (pollForObjects, fetchSignedFile)
+port module Commands exposing (pollForObjects, fetchSignedFile, download)
 
 import Http
 import Json.Encode as Encode
@@ -7,6 +7,9 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Messages exposing (Msg(..))
 import Model exposing (CloudObject, FileUrlObject)
 import RemoteData
+
+
+port download : String -> Cmd msg
 
 
 pollForObjects : Cmd Msg

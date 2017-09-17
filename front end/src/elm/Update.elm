@@ -3,7 +3,7 @@ module Update exposing (update)
 import Messages exposing (Msg(..))
 import Model exposing (Model, Field(..), Order(..), CloudObject)
 import RemoteData exposing (WebData, succeed)
-import Commands exposing (pollForObjects, fetchSignedFile)
+import Commands exposing (pollForObjects, fetchSignedFile, download)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -71,6 +71,9 @@ update msg model =
 
                 Err msg ->
                     ( model, Cmd.none )
+
+        DownloadFile filePath ->
+            ( model, download filePath )
 
 
 folderFilter : Model -> WebData (List CloudObject) -> WebData (List CloudObject)
