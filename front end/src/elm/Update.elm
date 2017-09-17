@@ -12,7 +12,7 @@ update msg model =
             ( { model | objects = response, filteredObjects = response }, Cmd.none )
 
         OrderObjects newOrdering ->
-            case model.objects of
+            case model.filteredObjects of
                 RemoteData.NotAsked ->
                     ( model, Cmd.none )
 
