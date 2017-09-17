@@ -20,7 +20,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 echo "[Desktop Entry]
 Name=$APP
 Terminal=false
-Exec=/usr/local/bin/Pouch %n
+Exec=/usr/local/bin/Pouch %f
 MimeType=application/x-$APP
 Icon=/home/andrei/.local/share/icons/hicolor/48x48/apps/pouch.png
 Type=Application"> ~/.local/share/applications/$APP.desktop

@@ -25,12 +25,13 @@ func DownloadAndLaunch(fp string) {
 
 	cfg := common.LoadSettings()
 
-	common.WriteToLog("realfilePath: " + fmt.Sprintf("%v", cfg))
+	common.WriteToLog("cfg: " + fmt.Sprintf("%v", cfg))
 
 	common.WriteToLog("filePath: " + fp)
-	go heartBeat(fp)
+	//go heartBeat(fp)
 
 	fullPath := path.Join(currentPath(), fp)
+	common.WriteToLog("fullPath: " + fullPath)
 	realFilePath := strings.Split(fullPath, ".pouch")[0]
 
 	common.WriteToLog("realfilePath:" + realFilePath)
@@ -38,6 +39,7 @@ func DownloadAndLaunch(fp string) {
 		common.WriteToLog("Going and getting the file")
 
 		parts := strings.Split(realFilePath, cfg.PouchRoot)
+		common.WriteToLog(fmt.Sprintf("%#v", parts))
 		relPath := parts[len(parts)-1]
 
 		bucket, err := common.GetS3Bucket(cfg.S3Root)

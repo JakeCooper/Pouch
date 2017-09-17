@@ -99,7 +99,7 @@ func GetS3Bucket(bucketName string) (*s3.Bucket, error) {
 		return nil, errors.Wrap(err, "could not connect to bucket")
 	}
 
-	WriteToLog(fmt.Sprintf("Auth: %#v", auth))
+	//WriteToLog(fmt.Sprintf("Auth: %#v", auth))
 	conn := s3.New(*auth, aws.USWest2)
 	bucket := conn.Bucket(bucketName)
 	return bucket, nil
@@ -111,7 +111,9 @@ func GetAuth() (*aws.Auth, error) {
 	if os.Getenv("AWS_ACCESS_KEY_ID") == "" || os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
 		auth, err := aws.SharedAuth()
 		if err != nil {
+			WriteToLog(err.Error())
 			return nil, errors.Wrap(err, "could not authenticate through evars or through creds file")
+
 		}
 		return &auth, nil
 	}
