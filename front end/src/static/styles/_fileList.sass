@@ -1,0 +1,61 @@
+@import variables
+
+.hero-body
+    background: $secondary-color
+    padding: 0
+
+    .sortingOptions
+        width: 66vw
+
+        .sort
+            span:hover
+                color: lighten(black, 5%)
+
+        .sortName
+            margin: 0 0 0 64px
+            width: 200px
+        
+        .sortModified
+            float: right
+            margin: 0 0px 0 0
+            width: 200px
+            
+        
+        margin: 0 0 1rem 0
+
+    .box
+        padding-top: 0
+        padding-bottom: 0
+        width: 66vw
+        
+        & li:last-child
+            border-bottom: none
+        
+        .object
+            border-bottom: 1px solid $border-color
+            height: 60px
+            padding: 20px 0 0 0
+        
+
+            .file-link
+                color: $primary-color
+
+                &:hover
+                    color: lighten($primary-color, 8%)
+
+            i
+                font-size: 20px
+                margin: 0 20px 0 0
+            
+            .options
+                color: $icon-color
+                float: right
+                margin: 0
+
+                &:hover
+                    color: darken($icon-color, 10%)
+
+            .modified
+                float: right
+                margin: 0 100px 0 0
+

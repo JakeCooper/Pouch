@@ -1,0 +1,25 @@
+{
+    "objects": [
+        {
+            "name": "photos",
+            "objectType": "folder",
+            "filePath": "/home/MichaelReiter/depth",
+            "modified": "2017-09-16T20:52:16.000Z",
+            "url": ""
+        },
+        {
+            "name": "documents",
+            "objectType": "folder",
+            "filePath": "/home/MichaelReiter/depth",
+            "modified": "2017-09-16T20:52:16.000Z",
+            "url": ""
+        },
+        {
+            "name": "foo.c",
+            "objectType": "file",
+            "filePath": "/home/MichaelReiter/depth",
+            "modified": "2017-09-16T20:52:16.000Z",
+            "url": "https://michaelreiter.github.io/res/michael-reiter-resume.pdf"
+        }
+    ]
+}
